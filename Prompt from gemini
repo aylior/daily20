@@ -1,0 +1,54 @@
+To generate the entire **Daily10 Web App** in a single go, you need a "Mega-Prompt" that gives the AI the exact architecture, feature list, and technical constraints all at once.
+
+When you ask an AI to build a full application in one shot, being incredibly specific about the tech stack and the logic prevents it from making wrong assumptions (like trying to use a database when you want local storage).
+
+Here is the best prompt to recreate all the work we just did. You can copy and paste this into any advanced AI model:
+
+---
+
+**Copy and paste the following prompt:**
+
+> Act as an expert frontend developer. Write the complete, production-ready code for a web-based mobile application called "Daily10". The app must be contained entirely within a single `index.html` file, using React and Babel via CDN, and inline CSS. Do not use build tools like Webpack or Node.js.
+> **App Concept:**
+> A custom workout trainer that lets users add YouTube exercise videos to a library, assigns them durations and start-time offsets, and then automatically generates a 10-minute workout circuit for the day.
+> **Design System:**
+> * Modern Dark Mode: Background `#121212`, Cards `#1e1e1e`.
+> * Accent Color: Neon Green `#ccff00` for buttons and completed days.
+> * Mobile-first, card-based layout without horizontal scrolling.
+> 
+> 
+> **Core Features & Logic:**
+> 1. **State Management & Navigation:** Use React state to switch between three views: `home`, `lib` (Library), and `workout`. Persist data using `localStorage` (keys: `lib` for videos, `hist` for workout logs).
+> 2. **Library View (`lib`):**
+> * A form to add exercises with fields: Title, YouTube URL, Duration (in minutes), and Start Time (accepts "MM:SS" or just seconds, converted to total seconds).
+> * Display a list of added exercises. Extract the YouTube Video ID from the URL to display a thumbnail image (`https://img.youtube.com/vi/ID/mqdefault.jpg`).
+> * Include buttons to Export (Base64 encode the library string to clipboard) and Import (Prompt user for Base64 string to overwrite library).
+> 
+> 
+> 3. **Dashboard View (`home`):**
+> * A "Start Today's Session" button. When clicked, run an algorithm that randomly selects exercises from the library until the sum of their durations equals exactly 10 minutes (or as close as possible without exceeding).
+> * A "Consistency Heatmap" calendar showing the last 28 days. Color days gray (0 mins), neon border (1-9 mins), and solid neon (10+ mins) based on the `hist` local storage.
+> 
+> 
+> 4. **Workout Player View (`workout`):**
+> * Display the currently active exercise from the generated 10-minute plan.
+> * Embed a YouTube iframe using the extracted Video ID, appending `?start=X&autoplay=1` (where X is the parsed start time offset).
+> * Include a countdown timer based on the exercise's set duration. When the timer hits 0, auto-advance to the next video.
+> * Include a "Skip" button and an "End Early" button (which calculates minutes completed so far and saves it to history).
+> 
+> 
+> 5. **Device APIs:**
+> * Implement the JavaScript `navigator.wakeLock` API. Request the screen wake lock when the `workout` view mounts, and release it when the workout ends or the component unmounts.
+> 
+> 
+> 
+> 
+> Please output the complete HTML file code block so I can save it and run it immediately in my browser.
+
+---
+
+### Why this prompt works:
+
+* **Constraint Setting:** It explicitly demands a single file with CDNs. Without this, AI will usually generate a multi-file file structure (App.js, index.js, package.json) that requires a terminal to run.
+* **Logic Definition:** Instead of just saying "generate a workout," it defines the *Knapsack logic* ("randomly select... until the sum equals exactly 10").
+* **API Details:** It explicitly mentions the YouTube thumbnail URL structure and the Wake Lock API, saving the AI from having to guess how you want to handle video previews and screen dimming.
