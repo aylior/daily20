@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily10 Trainer</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root { --bg: #121212; --card: #1e1e1e; --neon: #ccff00; --text: #fff; --danger: #ff4d4d; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #333; }
+        input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .day { aspect-ratio: 1; background: #252525; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 6px; }
+        .complete { background: var(--neon); color: black; font-weight: bold; }
+        .partial { border: 2px solid var(--neon); color: var(--neon); }
+        .thumb { width: 90px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .flex-row { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- CORE UTILS ---
+        const getYTID = (url) => {
+            const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
+            return (match && match[2].length === 11) ? match[2] : null;
+        };
+
+        const parseTime = (str) => {
+            if (str.includes(':')) {
+                const [m, s] = str.split(':').map(Number);
+                return (m * 60) + (s || 0);
+            }
+            return parseInt(str) || 0;
+        };
+
+        // --- SCREEN WAKE LOCK ---
+        let wakeLock = null;
+        const toggleWakeLock = async (on) => {
+            try {
+                if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+                else if (wakeLock) { wakeLock.release(); wakeLock = null; }
+            } catch (e) {}
+        };
+
+        const App = () => {
+            const [view, setView] = useState('home');
+            const [library, setLibrary] = useState(JSON.parse(localStorage.getItem('lib') || '[]'));
+            const [history, setHistory] = useState(JSON.parse(localStorage.getItem('hist') || '{}'));
+            const [workoutPlan, setWorkoutPlan] = useState([]);
+
+            // Generate 10-minute Plan
+            const startSession = () => {
+                let plan = []; let total = 0;
+                const shuffled = [...library].sort(() => 0.5 - Math.random());
+                for (let ex of shuffled) {
+                    if (total + ex.duration <= 10) { plan.push(ex); total += ex.duration; }
+                }
+                if (plan.length === 0) return alert("Add exercises to your library first!");
+                setWorkoutPlan(plan);
+                setView('active');
+                toggleWakeLock(true);
+            };
+
+            const finishWorkout = (mins) => {
+                const today = new Date().toISOString().split('T')[0];
+                const newHist = {...history, [today]: (history[today] || 0) + mins};
+                setHistory(newHist);
+                localStorage.setItem('hist', JSON.stringify(newHist));
+                toggleWakeLock(false);
+                setView('home');
+            };
+
+            return (
+                <div className="container">
+                    <header style={{display:'flex', justifyContent:'space-between', padding:'20px 0'}}>
+                        <h1 onClick={() => setView('home')} style={{margin:0, color: 'var(--neon)'}}>DAILY10</h1>
+                        <button style={{width:'auto', padding:'8px 15px'}} onClick={() => setView('lib')}>Library</button>
+                    </header>
+
+                    {view === 'home' && (
+                        <div>
+                            <div className="card" style={{textAlign:'center'}}>
+                                <h2 style={{marginTop:0}}>Ready to Sweat?</h2>
+                                <button onClick={startSession}>START 10 MIN SESSION</button>
+                            </div>
+                            <h3>Consistency Tracker</h3>
+                            <div className="calendar">
+                                {[...Array(28)].map((_, i) => {
+                                    const date = `2026-03-${String(i+1).padStart(2, '0')}`;
+                                    const val = history[date] || 0;
+                                    return <div key={i} className={`day ${val >= 10 ? 'complete' : val > 0 ? 'partial' : ''}`}>{i+1}</div>
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'lib' && (
+                        <div>
+                            <form className="card" onSubmit={(e) => {
+                                e.preventDefault();
+                                const d = new FormData(e.target);
+                                const nl = [...library, { id: Date.now(), title: d.get('t'), url: d.get('u'), duration: parseInt(d.get('d')), start: parseTime(d.get('s')) }];
+                                setLibrary(nl); localStorage.setItem('lib', JSON.stringify(nl)); e.target.reset();
+                            }}>
+                                <input name="t" placeholder="Exercise Name" required />
+                                <input name="u" placeholder="YouTube URL" required />
+                                <div style={{display:'flex', gap:'10px'}}>
+                                    <input name="d" placeholder="Mins" type="number" required />
+                                    <input name="s" placeholder="Start At (e.g. 1:15)" />
+                                </div>
+                                <button type="submit">Add Video</button>
+                            </form>
+                            {library.map(ex => (
+                                <div key={ex.id} className="card flex-row">
+                                    <img className="thumb" src={`https://img.youtube.com/vi/${getYTID(ex.url)}/mqdefault.jpg`} />
+                                    <div style={{flex:1}}><b>{ex.title}</b><br/><small>{ex.duration}m</small></div>
+                                    <button style={{width:'auto', background:'none', color:'red'}} onClick={() => {
+                                        const nl = library.filter(i => i.id !== ex.id); setLibrary(nl); localStorage.setItem('lib', JSON.stringify(nl));
+                                    }}>✕</button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {view === 'active' && (
+                        <div className="card" style={{textAlign:'center'}}>
+                            <h2>Current Session</h2>
+                            <p>Follow your videos on the YouTube app/browser.</p>
+                            <div style={{fontSize:'3rem', margin:'20px 0'}}>10:00</div>
+                            <button onClick={() => finishWorkout(10)}>MARK COMPLETED</button>
+                            <button style={{marginTop:'10px', background:'#333', color:'white'}} onClick={() => setView('home')}>CANCEL</button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
