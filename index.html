@@ -3,38 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | Power Controls</title>
+    <title>Daily20 Pro | Vertical Vision</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --info: #3498db; --warning: #f39c12; --success: #2ecc71; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px; overflow-x: hidden; }
-        .container { max-width: 500px; margin: 0 auto; padding-bottom: 60px; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; }
+        .container { max-width: 500px; margin: 0 auto; padding-bottom: 80px; }
         .card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; position: relative; }
         input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
         button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         button:active { transform: scale(0.95); }
         .btn-sec { background: #333; color: white; margin-top: 10px; }
         
+        /* Dynamic Player Sizing */
+        .player-wrapper { width: 100%; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; position: relative; border: 1px solid #333; transition: aspect-ratio 0.5s ease; }
+        .ratio-yt { aspect-ratio: 16/9; }
+        .ratio-insta { aspect-ratio: 9/16; max-height: 70vh; } /* Tall for Reels */
+        
+        #yt-player, .insta-player { width: 100%; height: 100%; border: 0; display: block; }
+        
         .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scroll-snap-type: x mandatory; margin-bottom: 15px; }
         .carousel::-webkit-scrollbar { display: none; }
-        .carousel-item { scroll-snap-align: start; flex: 0 0 120px; cursor: pointer; text-align: center; }
-        .carousel-thumb { width: 120px; height: 75px; border-radius: 10px; object-fit: cover; border: 2px solid transparent; background: #333; }
+        .carousel-item { scroll-snap-align: start; flex: 0 0 100px; cursor: pointer; text-align: center; }
+        .carousel-thumb { width: 100px; height: 65px; border-radius: 10px; object-fit: cover; border: 2px solid transparent; background: #333; }
         .selected .carousel-thumb { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); }
 
-        .player-wrapper { width: 100%; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; position: relative; border: 1px solid #333; }
-        #yt-player, .insta-player { width: 100%; height: 100%; border: 0; }
-        
         .status-tag { display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-bottom: 5px; }
         .status-paused { background: var(--danger); color: white; }
         .status-playing { background: var(--success); color: black; }
         .status-manual { background: var(--warning); color: black; }
 
+        .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .mini-btn { background: #2a2a2a; color: white; padding: 12px; border-radius: 8px; font-size: 12px; border: 1px solid #444; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
-        .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .mini-btn { background: #2a2a2a; color: white; padding: 10px; border-radius: 8px; font-size: 12px; border: 1px solid #444; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 3000; padding: 20px; }
     </style>
 </head>
@@ -46,8 +50,8 @@
 
         const App = () => {
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_final_v14') || '[]'));
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v14') || '{}'));
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_final_v15') || '[]'));
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v15') || '{}'));
             const [selectedId, setSelectedId] = useState(null);
             const [editingVid, setEditingVid] = useState(null);
             const [workout, setWorkout] = useState({ plan: [], idx: 0, seconds: 0 });
@@ -57,8 +61,8 @@
             const playerRef = useRef(null);
 
             useEffect(() => {
-                localStorage.setItem('d20_final_v14', JSON.stringify(lib));
-                localStorage.setItem('d20_hist_v14', JSON.stringify(hist));
+                localStorage.setItem('d20_final_v15', JSON.stringify(lib));
+                localStorage.setItem('d20_hist_v15', JSON.stringify(hist));
             }, [lib, hist]);
 
             const getYTID = (u) => u?.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/)?.[1];
@@ -90,7 +94,9 @@
                             });
                         };
                         window.YT ? initYT() : window.onYouTubeIframeAPIReady = initYT;
-                    } else { setIsPlaying(true); }
+                    } else { 
+                        setIsPlaying(true); // Default to on for Insta
+                    }
                 }
             }, [view, workout.idx]);
 
@@ -110,8 +116,7 @@
             };
 
             const finish = () => {
-                const today = new Date().toISOString().split('T')[0];
-                setHist({...hist, [today]: {mins:20}});
+                setHist({...hist, [new Date().toISOString().split('T')[0]]: {mins:20}});
                 setView('home'); setSelectedId(null);
             };
 
@@ -119,7 +124,7 @@
 
             return (
                 <div className="container">
-                    <h1 style={{color:'var(--neon)', textAlign:'center', cursor:'pointer'}} onClick={() => setView('home')}>DAILY20</h1>
+                    <h1 style={{color:'var(--neon)', textAlign:'center', cursor:'pointer'}} onClick={() => {setView('home'); setIsPlaying(false);}}>DAILY20</h1>
 
                     {view === 'home' && (
                         <div>
@@ -128,12 +133,12 @@
                                     {lib.map(v => (
                                         <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(selectedId === v.id ? null : v.id)}>
                                             <img className="carousel-thumb" src={getThumb(v)} />
-                                            <div style={{fontSize:'10px', marginTop:'5px', overflow:'hidden'}}>{v.title}</div>
+                                            <div style={{fontSize:'10px', marginTop:'5px', whiteSpace:'nowrap', overflow:'hidden'}}>{v.title}</div>
                                         </div>
                                     ))}
                                 </div>
                                 <button onClick={() => {
-                                    if(lib.length === 0) return alert("Add videos first!");
+                                    if(!lib.length) return alert("Library empty!");
                                     const plan = selectedId ? [lib.find(v => v.id === selectedId), ...lib.filter(v => v.id !== selectedId)].slice(0,4) : lib.sort(() => 0.5 - Math.random()).slice(0,4);
                                     setWorkout({ plan, idx: 0, seconds: parseInt(plan[0].dur) * 60 });
                                     setView('workout');
@@ -157,8 +162,8 @@
                                 setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 }, ...lib]);
                                 e.target.reset();
                             }}>
-                                <h3>Add Video</h3>
-                                <input name="u" placeholder="URL (YouTube or Instagram)" required />
+                                <h3>Add Content</h3>
+                                <input name="u" placeholder="YouTube or Instagram URL" required />
                                 <input name="t" placeholder="Title" required />
                                 <div style={{display:'flex', gap:'10px'}}>
                                     <input name="d" type="number" placeholder="Mins" required />
@@ -186,7 +191,7 @@
 
                     {view === 'workout' && (
                         <div style={{textAlign:'center'}}>
-                            <div className="player-wrapper">
+                            <div className={`player-wrapper ${isInsta(workout.plan[workout.idx].url) ? 'ratio-insta' : 'ratio-yt'}`}>
                                 {isInsta(workout.plan[workout.idx].url) ? (
                                     <iframe className="insta-player" src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowTransparency="true" allowFullScreen></iframe>
                                 ) : (
@@ -198,13 +203,13 @@
                                 {!isPlaying ? 'II VIDEO PAUSED' : timerOverride ? 'II TIMER PAUSED' : '▶ TIMER ACTIVE'}
                             </div>
                             
-                            <div style={{fontSize:'64px', fontWeight:'900', color: (isPlaying && !timerOverride) ? 'var(--neon)' : 'var(--dim)'}}>
+                            <div style={{fontSize:'54px', fontWeight:'900', color: (isPlaying && !timerOverride) ? 'var(--neon)' : 'var(--dim)'}}>
                                 {Math.floor(workout.seconds/60)}:{(workout.seconds%60).toString().padStart(2,'0')}
                             </div>
                             
-                            <h3 style={{margin:'10px 0'}}>{workout.plan[workout.idx].title}</h3>
+                            <h4 style={{margin:'5px 0'}}>{workout.plan[workout.idx].title}</h4>
 
-                            <button onClick={() => setTimerOverride(!timerOverride)} style={{background: timerOverride ? 'var(--success)' : 'var(--warning)', width:'100%', marginBottom:'10px'}}>
+                            <button onClick={() => setTimerOverride(!timerOverride)} style={{background: timerOverride ? 'var(--success)' : 'var(--warning)', width:'100%', padding:'12px', marginBottom:'8px'}}>
                                 {timerOverride ? 'Resume Clock' : 'Pause Clock'}
                             </button>
 
@@ -213,11 +218,11 @@
                                     {isMuted ? '🔇 Unmute' : '🔊 Mute'}
                                 </button>
                                 <button className="mini-btn" onClick={handleSkip}>
-                                    ⏭ Skip Video
+                                    ⏭ Skip
                                 </button>
                             </div>
                             
-                            <button className="btn-sec" onClick={() => setView('home')} style={{width:'100%'}}>Exit Session</button>
+                            <button className="btn-sec" onClick={() => {setIsPlaying(false); setView('home');}} style={{width:'100%'}}>Exit</button>
                         </div>
                     )}
 
