@@ -1,219 +1,175 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | Start-Time Enabled</title>
-    <style>
-        :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px; }
-        .container { max-width: 500px; margin: 0 auto; }
-        .card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; text-align: center; }
-        input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
-        button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; margin-top: 5px; }
-        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
-        .day { aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; color: var(--dim); cursor: pointer; font-weight: bold; }
-        .complete { background: var(--neon); color: black; box-shadow: 0 0 10px var(--neon); }
-        .hidden { display: none; }
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        #timer { font-size: 52px; color: var(--neon); font-weight: 900; margin: 10px 0; letter-spacing: -1px; }
-        #celebrate { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--neon); font-size: 32px; font-weight: 900; text-align: center; border: 5px solid var(--neon); }
-        .lib-item { display: flex; justify-content: space-between; align-items: center; text-align: left; background: #2a2a2a; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Daily20 Pro</title>
+<style>
+:root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; }
+body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 15px; }
+.container { max-width: 500px; margin: 0 auto; }
+.card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; text-align: center; }
+input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
+button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; margin-top: 5px; }
+.calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
+.day { aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; color: var(--dim); cursor: pointer; }
+.complete { background: var(--neon); color: black; box-shadow: 0 0 10px var(--neon); }
+.hidden { display: none; }
+.video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; }
+.video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+#timer { font-size: 48px; color: var(--neon); font-weight: 900; margin: 10px 0; }
+#celebrate { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--neon); font-size: 30px; font-weight: 900; text-align: center; }
+.lib-item { display: flex; justify-content: space-between; align-items: center; text-align: left; background: #2a2a2a; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+</style>
 </head>
 <body>
 
-    <div id="celebrate" class="hidden">GOAL REACHED!<br>20 MINS LOGGED</div>
+<div id="celebrate" class="hidden">MISSION COMPLETE!<br>20 MINS LOGGED</div>
 
-    <div class="container">
-        <h1 style="color: var(--neon); letter-spacing: -1px;" onclick="showView('home')">DAILY20</h1>
+<div class="container">
+    <h1 style="color: var(--neon)" onclick="showView('home')">DAILY20</h1>
 
-        <div id="view-home">
-            <div class="card">
-                <h2 style="margin-top:0">Today's Session</h2>
-                <button onclick="startWorkout()">Start 20-Min Session</button>
-                <button style="background: #333; color: white;" onclick="showView('lib')">Manage Library</button>
-            </div>
-            <div class="calendar" id="calendar-grid"></div>
+    <div id="view-home">
+        <div class="card">
+            <h2>Ready?</h2>
+            <button onclick="startWorkout()">Start 20-Min Session</button>
+            <button style="background: #333; color: white;" onclick="showView('lib')">Edit Library</button>
         </div>
-
-        <div id="view-lib" class="hidden">
-            <div class="card">
-                <h3>Add New Workout</h3>
-                <input id="lib-url" placeholder="YouTube URL">
-                <input id="lib-title" placeholder="Video Title">
-                <div style="display: flex; gap: 10px;">
-                    <input id="lib-dur" type="number" placeholder="Mins">
-                    <input id="lib-start" type="number" placeholder="Start at (Secs)">
-                </div>
-                <button onclick="addToLibrary()">Add to Library</button>
-            </div>
-            <div id="lib-list"></div>
-            <button style="background: #333; color: white; margin-top: 20px;" onclick="showView('home')">Back to Dashboard</button>
-        </div>
-
-        <div id="view-workout" class="hidden">
-            <div class="video-container" id="player-target"></div>
-            <div id="timer">20:00</div>
-            <h3 id="current-title" style="margin-bottom: 20px;">Workout Name</h3>
-            <button style="background: #444; color: white;" onclick="quitWorkout()">Quit Session</button>
-        </div>
+        <div class="calendar" id="calendar-grid"></div>
     </div>
 
-    <script>
-        // --- DATA & STATE ---
-        let library = JSON.parse(localStorage.getItem('d20_lib_v2') || '[]');
-        let history = JSON.parse(localStorage.getItem('d20_hist_v2') || '{}');
-        let currentPlan = [];
-        let planIdx = 0;
-        let secondsLeft = 0;
-        let timerInterval = null;
+    <div id="view-lib" class="hidden">
+        <div class="card">
+            <h3>Add Video</h3>
+            <input id="lib-url" placeholder="YouTube URL">
+            <input id="lib-title" placeholder="Title">
+            <input id="lib-dur" type="number" placeholder="Mins">
+            <input id="lib-start" type="number" placeholder="Start at (Seconds)">
+            <button onclick="addToLibrary()">Add Video</button>
+        </div>
+        <div id="lib-list"></div>
+        <button style="background: #333; color: white;" onclick="showView('home')">Back</button>
+    </div>
 
-        // --- NAVIGATION ---
-        function showView(viewName) {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-lib').classList.add('hidden');
-            document.getElementById('view-workout').classList.add('hidden');
-            document.getElementById('view-' + viewName).classList.remove('hidden');
-            if(viewName === 'home') renderCalendar();
-            if(viewName === 'lib') renderLibrary();
+    <div id="view-workout" class="hidden">
+        <div class="video-container" id="player-target"></div>
+        <div id="timer">20:00</div>
+        <h3 id="current-title">Workout</h3>
+        <button style="background: #444; color: white;" onclick="quitWorkout()">Quit</button>
+    </div>
+</div>
+
+<script>
+    let library = JSON.parse(localStorage.getItem('d20_lib_v3') || '[]');
+    let history = JSON.parse(localStorage.getItem('d20_hist_v3') || '{}');
+    let currentPlan = [];
+    let planIdx = 0;
+    let secondsLeft = 0;
+    let timerInterval = null;
+
+    function showView(viewName) {
+        document.getElementById('view-home').classList.add('hidden');
+        document.getElementById('view-lib').classList.add('hidden');
+        document.getElementById('view-workout').classList.add('hidden');
+        document.getElementById('view-' + viewName).classList.remove('hidden');
+        if(viewName === 'home') renderCalendar();
+        if(viewName === 'lib') renderLibrary();
+    }
+
+    function addToLibrary() {
+        const url = document.getElementById('lib-url').value;
+        const title = document.getElementById('lib-title').value;
+        const dur = parseInt(document.getElementById('lib-dur').value);
+        const start = parseInt(document.getElementById('lib-start').value) || 0;
+        if(!url || !title || !dur) return alert("Fill fields");
+        library.push({ id: Date.now(), url, title, dur, start });
+        localStorage.setItem('d20_lib_v3', JSON.stringify(library));
+        renderLibrary();
+    }
+
+    function renderLibrary() {
+        const list = document.getElementById('lib-list');
+        list.innerHTML = library.map(v => `
+            <div class="lib-item">
+                <span>${v.title} (${v.dur}m)</span>
+                <button onclick="deleteLib(${v.id})" style="width:auto; background:red;">X</button>
+            </div>
+        `).join('');
+    }
+
+    function deleteLib(id) {
+        library = library.filter(v => v.id !== id);
+        localStorage.setItem('d20_lib_v3', JSON.stringify(library));
+        renderLibrary();
+    }
+
+    function getYTID(url) {
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
+        return match ? match[1] : null;
+    }
+
+    function startWorkout() {
+        if(library.length === 0) return alert("Add videos first");
+        let shuffled = [...library].sort(() => 0.5 - Math.random());
+        currentPlan = [];
+        let total = 0;
+        for(let v of shuffled) {
+            if(total + v.dur <= 21) { currentPlan.push(v); total += v.dur; }
         }
+        planIdx = 0;
+        loadVideo();
+        showView('workout');
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(tick, 1000);
+    }
 
-        // --- LIBRARY LOGIC ---
-        function addToLibrary() {
-            const url = document.getElementById('lib-url').value;
-            const title = document.getElementById('lib-title').value;
-            const dur = parseInt(document.getElementById('lib-dur').value);
-            const start = parseInt(document.getElementById('lib-start').value) || 0; // Default to 0
-            
-            if(!url || !title || !dur) return alert("Please fill Title, URL, and Duration");
-            
-            library.push({ id: Date.now(), url, title, dur, start });
-            localStorage.setItem('d20_lib_v2', JSON.stringify(library));
-            
-            // Clear inputs
-            ['lib-url', 'lib-title', 'lib-dur', 'lib-start'].forEach(id => document.getElementById(id).value = '');
-            renderLibrary();
+    function loadVideo() {
+        const vid = currentPlan[planIdx];
+        secondsLeft = vid.dur * 60;
+        document.getElementById('current-title').innerText = vid.title;
+        document.getElementById('player-target').innerHTML = `
+            <iframe src="[https://www.youtube.com/embed/$](https://www.youtube.com/embed/$){getYTID(vid.url)}?autoplay=1&start=${vid.start}" allow="autoplay"></iframe>
+        `;
+    }
+
+    function tick() {
+        if (secondsLeft > 0) {
+            secondsLeft--;
+            const m = Math.floor(secondsLeft / 60);
+            const s = secondsLeft % 60;
+            document.getElementById('timer').innerText = m + ":" + (s < 10 ? '0' : '') + s;
+        } else {
+            if (planIdx < currentPlan.length - 1) { planIdx++; loadVideo(); }
+            else { finishSession(); }
         }
+    }
 
-        function renderLibrary() {
-            const list = document.getElementById('lib-list');
-            list.innerHTML = library.length ? '' : '<p style="color:var(--dim)">Your library is empty.</p>';
-            library.forEach(v => {
-                const item = document.createElement('div');
-                item.className = 'lib-item';
-                item.innerHTML = `
-                    <div>
-                        <div style="font-weight:bold">${v.title}</div>
-                        <div style="font-size:12px; color:var(--dim)">${v.dur}m (Starts at ${v.start}s)</div>
-                    </div>
-                    <button onclick="deleteLib(${v.id})" style="width:auto; background:var(--danger); padding: 5px 12px; margin:0">✕</button>
-                `;
-                list.appendChild(item);
-            });
+    function finishSession() {
+        clearInterval(timerInterval);
+        const today = new Date().toISOString().split('T')[0];
+        history[today] = true;
+        localStorage.setItem('d20_hist_v3', JSON.stringify(history));
+        document.getElementById('celebrate').classList.remove('hidden');
+        setTimeout(() => { document.getElementById('celebrate').classList.add('hidden'); showView('home'); }, 4000);
+    }
+
+    function quitWorkout() { if(confirm("Quit?")) { clearInterval(timerInterval); showView('home'); } }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        grid.innerHTML = '';
+        for(let i = 0; i < 28; i++) {
+            const d = new Date(); d.setDate(d.getDate() - (27 - i));
+            const s = d.toISOString().split('T')[0];
+            const dayDiv = document.createElement('div');
+            dayDiv.className = "day " + (history[s] ? "complete" : "");
+            dayDiv.innerText = d.getDate();
+            grid.appendChild(dayDiv);
         }
+    }
 
-        function deleteLib(id) {
-            library = library.filter(v => v.id !== id);
-            localStorage.setItem('d20_lib_v2', JSON.stringify(library));
-            renderLibrary();
-        }
-
-        // --- WORKOUT LOGIC ---
-        function getYTID(url) {
-            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
-            return match ? match[1] : null;
-        }
-
-        function startWorkout() {
-            if(library.length === 0) return alert("Add videos to library first!");
-            
-            let shuffled = [...library].sort(() => 0.5 - Math.random());
-            currentPlan = [];
-            let total = 0;
-            for(let v of shuffled) {
-                if(total + v.dur <= 21) {
-                    currentPlan.push(v);
-                    total += v.dur;
-                }
-            }
-            
-            planIdx = 0;
-            loadVideo();
-            showView('workout');
-            
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(tick, 1000);
-            
-            if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
-        }
-
-        function loadVideo() {
-            const vid = currentPlan[planIdx];
-            secondsLeft = vid.dur * 60;
-            document.getElementById('current-title').innerText = vid.title;
-            
-            // Using &start= parameter for YouTube
-            const ytid = getYTID(vid.url);
-            document.getElementById('player-target').innerHTML = `
-                <iframe src="https://www.youtube.com/embed/${ytid}?autoplay=1&start=${vid.start}&rel=0&modestbranding=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-            `;
-        }
-
-        function tick() {
-            if (secondsLeft > 0) {
-                secondsLeft--;
-                const m = Math.floor(secondsLeft / 60);
-                const s = secondsLeft % 60;
-                document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-            } else {
-                if (planIdx < currentPlan.length - 1) {
-                    planIdx++;
-                    loadVideo();
-                } else {
-                    finishSession();
-                }
-            }
-        }
-
-        function finishSession() {
-            clearInterval(timerInterval);
-            const today = new Date().toISOString().split('T')[0];
-            history[today] = true;
-            localStorage.setItem('d20_hist_v2', JSON.stringify(history));
-            
-            document.getElementById('celebrate').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('celebrate').classList.add('hidden');
-                showView('home');
-            }, 4000);
-        }
-
-        function quitWorkout() {
-            if(confirm("Quit workout? Progress won't be saved unless you finish.")) {
-                clearInterval(timerInterval);
-                showView('home');
-            }
-        }
-
-        // --- CALENDAR LOGIC ---
-        function renderCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '';
-            for(let i = 0; i < 28; i++) {
-                const d = new Date();
-                d.setDate(d.getDate() - (27 - i));
-                const s = d.toISOString().split('T')[0];
-                const dayDiv = document.createElement('div');
-                dayDiv.className = `day ${history[s] ? 'complete' : ''}`;
-                dayDiv.innerText = d.getDate();
-                grid.appendChild(dayDiv);
-            }
-        }
-
-        // Init
-        renderCalendar();
-    </script>
+    renderCalendar();
+</script>
 </body>
 </html>
