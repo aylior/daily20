@@ -3,103 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | Icons</title>
+    <title>Daily20 Pro | Smart Sync</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --info: #3498db; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 60px; }
         .card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; position: relative; }
-        input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
         button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
+        input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
         .btn-sec { background: #333; color: white; margin-top: 10px; }
-        
-        /* Icon Button Styles */
-        .icon-btn-group { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
-        .icon-btn { background: #2a2a2a; border: 1px solid #444; color: var(--text); padding: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex: 1; transition: 0.2s; }
-        .icon-btn:active { background: #333; transform: scale(0.95); }
-        .icon-btn svg { width: 20px; height: 20px; margin-right: 8px; stroke: var(--neon); }
-
-        .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scroll-snap-type: x mandatory; margin-bottom: 15px; }
+        .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; margin-bottom: 15px; }
         .carousel::-webkit-scrollbar { display: none; }
-        .carousel-item { scroll-snap-align: start; flex: 0 0 120px; cursor: pointer; text-align: center; }
+        .carousel-item { flex: 0 0 120px; cursor: pointer; text-align: center; }
         .carousel-thumb { width: 120px; height: 75px; border-radius: 10px; object-fit: cover; border: 2px solid transparent; }
         .selected .carousel-thumb { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); }
-
         .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
-        .day { aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--dim); }
+        .day { aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; color: var(--dim); }
         .day.complete { background: var(--neon); color: black; }
-
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        
-        .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 3000; padding: 20px; }
+        #player { width: 100%; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; }
+        .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
+        .icon-btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .icon-btn { background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 10px; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; }
         .celebrate { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .status-tag { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-bottom: 5px; }
+        .status-paused { background: var(--danger); color: white; }
+        .status-playing { background: #2ecc71; color: black; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
-
-        // Simple SVG Icons
-        const ExportIcon = () => (
-            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        );
-        const ImportIcon = () => (
-            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        );
+        const { useState, useEffect, useRef } = React;
 
         const App = () => {
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_final_v9') || '[]'));
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v9') || '{}'));
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_final_v10') || '[]'));
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v10') || '{}'));
             const [selectedId, setSelectedId] = useState(null);
             const [isDone, setIsDone] = useState(false);
-            const [editingVid, setEditingVid] = useState(null);
             const [workout, setWorkout] = useState({ plan: [], idx: 0, seconds: 0 });
+            const [isPlaying, setIsPlaying] = useState(false);
+            
+            const playerRef = useRef(null);
 
             useEffect(() => {
-                localStorage.setItem('d20_final_v9', JSON.stringify(lib));
-                localStorage.setItem('d20_hist_v9', JSON.stringify(hist));
+                localStorage.setItem('d20_final_v10', JSON.stringify(lib));
+                localStorage.setItem('d20_hist_v10', JSON.stringify(hist));
             }, [lib, hist]);
 
+            // Timer logic - only runs if isPlaying is TRUE
             useEffect(() => {
                 let timer;
-                if (view === 'workout' && workout.seconds > 0) {
-                    timer = setInterval(() => setWorkout(w => ({ ...w, seconds: w.seconds - 1 })), 1000);
+                if (view === 'workout' && isPlaying && workout.seconds > 0) {
+                    timer = setInterval(() => {
+                        setWorkout(w => ({ ...w, seconds: w.seconds - 1 }));
+                    }, 1000);
                 } else if (view === 'workout' && workout.seconds === 0 && workout.plan.length > 0) {
-                    if (workout.idx < workout.plan.length - 1) {
-                        const nextIdx = workout.idx + 1;
-                        setWorkout(w => ({ ...w, idx: nextIdx, seconds: parseInt(w.plan[nextIdx].dur) * 60 }));
-                    } else { finishSession(); }
+                    handleNextVideo();
                 }
                 return () => clearInterval(timer);
-            }, [view, workout.seconds]);
+            }, [view, isPlaying, workout.seconds]);
+
+            // Initialize YouTube Player
+            useEffect(() => {
+                if (view === 'workout' && workout.plan.length > 0) {
+                    window.onYouTubeIframeAPIReady = () => loadPlayer();
+                    if (window.YT && window.YT.Player) {
+                        loadPlayer();
+                    }
+                }
+            }, [view, workout.idx]);
+
+            const loadPlayer = () => {
+                const currentVid = workout.plan[workout.idx];
+                playerRef.current = new YT.Player('player', {
+                    videoId: getYTID(currentVid.url),
+                    playerVars: { 
+                        'autoplay': 1, 
+                        'start': currentVid.start, 
+                        'rel': 0, 
+                        'modestbranding': 1 
+                    },
+                    events: {
+                        'onStateChange': (event) => {
+                            // YT.PlayerState.PLAYING = 1, PAUSED = 2
+                            if (event.data === 1) setIsPlaying(true);
+                            else if (event.data === 2 || event.data === 0) setIsPlaying(false);
+                        }
+                    }
+                });
+            };
+
+            const handleNextVideo = () => {
+                if (workout.idx < workout.plan.length - 1) {
+                    const nextIdx = workout.idx + 1;
+                    setWorkout(w => ({ ...w, idx: nextIdx, seconds: parseInt(w.plan[nextIdx].dur) * 60 }));
+                } else {
+                    finishSession();
+                }
+            };
 
             const getYTID = (u) => u?.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/)?.[1];
-
-            const exportData = () => {
-                const blob = new Blob([JSON.stringify(lib, null, 2)], {type: 'application/json'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = 'daily20_backup.json'; a.click();
-            };
-
-            const importData = (e) => {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    try {
-                        const data = JSON.parse(ev.target.result);
-                        if(Array.isArray(data)) { setLib([...data, ...lib]); alert("Imported!"); }
-                    } catch(err) { alert("Invalid File"); }
-                };
-                reader.readAsText(e.target.files[0]);
-            };
 
             const startTraining = () => {
                 if (!lib.length) return alert("Library empty!");
@@ -110,6 +119,7 @@
                 }
                 const others = lib.filter(v => v.id !== selectedId).sort(() => 0.5 - Math.random());
                 for (let v of others) { if (total + parseInt(v.dur) <= 21) { plan.push(v); total += parseInt(v.dur); } }
+                
                 setWorkout({ plan, idx: 0, seconds: parseInt(plan[0].dur) * 60 });
                 setView('workout');
             };
@@ -124,7 +134,7 @@
             return (
                 <div className="container">
                     {isDone && <div className="celebrate" onClick={() => setIsDone(false)}><h1>MISSION COMPLETE</h1><p>20 MINS LOGGED</p></div>}
-                    <h1 style={{color: 'var(--neon)', textAlign:'center', cursor:'pointer'}} onClick={() => setView('home')}>DAILY20</h1>
+                    <h1 style={{color: 'var(--neon)', textAlign:'center'}} onClick={() => setView('home')}>DAILY20</h1>
 
                     {view === 'home' && (
                         <div>
@@ -133,11 +143,11 @@
                                     {lib.map(v => (
                                         <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(selectedId === v.id ? null : v.id)}>
                                             <img className="carousel-thumb" src={`https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`} />
-                                            <div style={{fontSize:'10px', marginTop:'5px', textOverflow:'ellipsis', overflow:'hidden', whiteSpace:'nowrap'}}>{v.title}</div>
+                                            <div style={{fontSize:'10px', marginTop:'5px'}}>{v.title}</div>
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={startTraining}>{selectedId ? 'Play Selected + Random' : 'Start Random 20m'}</button>
+                                <button onClick={startTraining}>Start Workout</button>
                                 <button className="btn-sec" onClick={() => setView('lib')}>Manage Library</button>
                             </div>
                             <div className="calendar">
@@ -151,82 +161,29 @@
                     )}
 
                     {view === 'lib' && (
-                        <div>
-                            <form className="card" onSubmit={e => {
-                                e.preventDefault();
-                                const f = new FormData(e.target);
-                                setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 }, ...lib]);
-                                e.target.reset();
-                            }}>
-                                <h3>Add Video</h3>
-                                <input name="u" placeholder="YouTube URL" required />
-                                <input name="t" placeholder="Title" required />
-                                <div style={{display:'flex', gap:'10px'}}>
-                                    <input name="d" type="number" placeholder="Mins" required />
-                                    <input name="s" type="number" placeholder="Start (Secs)" />
+                        <div className="card">
+                            <h3>Library</h3>
+                            {lib.map(v => (
+                                <div key={v.id} className="lib-row">
+                                    <span style={{fontSize:'13px'}}>{v.title} ({v.dur}m)</span>
+                                    <button onClick={() => setLib(lib.filter(x => x.id !== v.id))} style={{background:'var(--danger)', width:'30px'}}>✕</button>
                                 </div>
-                                <button type="submit">Add to Library</button>
-                            </form>
-                            
-                            <div className="card">
-                                {lib.map(v => (
-                                    <div key={v.id} className="lib-row">
-                                        <div style={{display:'flex', alignItems:'center', flexGrow: 1}}>
-                                            <img src={`https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`} style={{width:'40px', borderRadius:'4px', marginRight:'10px'}} />
-                                            <span style={{fontSize:'13px'}}>{v.title}</span>
-                                        </div>
-                                        <div style={{display:'flex', gap:'8px'}}>
-                                            <button onClick={() => setEditingVid(v)} style={{background:'var(--info)', width:'35px', padding:'5px'}}>✎</button>
-                                            <button onClick={() => setLib(lib.filter(x => x.id !== v.id))} style={{background:'var(--danger)', width:'35px', padding:'5px'}}>✕</button>
-                                        </div>
-                                    </div>
-                                ))}
-                                
-                                <div className="icon-btn-group">
-                                    <button className="icon-btn" onClick={exportData}>
-                                        <ExportIcon /> Export
-                                    </button>
-                                    <label className="icon-btn" style={{cursor:'pointer'}}>
-                                        <ImportIcon /> Import
-                                        <input type="file" style={{display:'none'}} onChange={importData} accept=".json" />
-                                    </label>
-                                </div>
-                            </div>
+                            ))}
                             <button className="btn-sec" onClick={() => setView('home')}>Back</button>
-                        </div>
-                    )}
-
-                    {editingVid && (
-                        <div className="modal-overlay">
-                            <form className="card" style={{width:'85%'}} onSubmit={(e) => {
-                                e.preventDefault();
-                                const f = new FormData(e.target);
-                                setLib(lib.map(v => v.id === editingVid.id ? {...v, title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 } : v));
-                                setEditingVid(null);
-                            }}>
-                                <h3>Edit Workout</h3>
-                                <input name="u" defaultValue={editingVid.url} placeholder="URL" required />
-                                <input name="t" defaultValue={editingVid.title} placeholder="Title" required />
-                                <div style={{display:'flex', gap:'10px'}}>
-                                    <input name="d" type="number" defaultValue={editingVid.dur} placeholder="Mins" required />
-                                    <input name="s" type="number" defaultValue={editingVid.start} placeholder="Start Secs" />
-                                </div>
-                                <button type="submit">Save</button>
-                                <button type="button" className="btn-sec" onClick={() => setEditingVid(null)}>Cancel</button>
-                            </form>
                         </div>
                     )}
 
                     {view === 'workout' && (
                         <div style={{textAlign: 'center'}}>
-                            <div className="video-container">
-                                <iframe src={`https://www.youtube.com/embed/${getYTID(workout.plan[workout.idx].url)}?autoplay=1&start=${workout.plan[workout.idx].start}`} allow="autoplay" allowFullScreen></iframe>
+                            <div id="player"></div>
+                            <div className={`status-tag ${isPlaying ? 'status-playing' : 'status-paused'}`}>
+                                {isPlaying ? '• TIMER ACTIVE' : 'II PAUSED'}
                             </div>
-                            <div style={{fontSize:'54px', fontWeight:'900', color:'var(--neon)'}}>
+                            <div style={{fontSize:'64px', fontWeight:'900', color: isPlaying ? 'var(--neon)' : 'var(--dim)', transition: '0.3s'}}>
                                 {Math.floor(workout.seconds / 60)}:{(workout.seconds % 60).toString().padStart(2, '0')}
                             </div>
-                            <h3>{workout.plan[workout.idx].title}</h3>
-                            <button className="btn-sec" onClick={() => setView('home')}>Quit</button>
+                            <h3 style={{margin:'10px 0'}}>{workout.plan[workout.idx].title}</h3>
+                            <button className="btn-sec" onClick={() => setView('home')}>Exit</button>
                         </div>
                     )}
                 </div>
