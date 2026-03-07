@@ -3,41 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | Carousel</title>
+    <title>Daily20 Pro | Editor</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; }
+        :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --info: #3498db; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 60px; }
         .card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; position: relative; }
         input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
         button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
         .btn-sec { background: #333; color: white; margin-top: 10px; }
+        .btn-outline { background: transparent; border: 1px solid #444; color: var(--dim); margin-top: 10px; font-size: 12px; }
         
-        /* Carousel Styles */
-        .carousel-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
-        .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; margin-bottom: 15px; }
+        .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scroll-snap-type: x mandatory; margin-bottom: 15px; }
         .carousel::-webkit-scrollbar { display: none; }
-        .carousel-item { scroll-snap-align: start; flex: 0 0 120px; cursor: pointer; position: relative; transition: 0.3s; }
-        .carousel-thumb { width: 120px; height: 75px; border-radius: 10px; object-fit: cover; border: 2px solid transparent; }
-        .carousel-item.selected .carousel-thumb { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); transform: scale(1.05); }
-        .carousel-title { font-size: 10px; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; text-align: center; }
+        .carousel-item { scroll-snap-align: start; flex: 0 0 120px; cursor: pointer; text-align: center; }
+        .carousel-thumb { width: 120px; height: 75px; border-radius: 10px; object-fit: cover; border: 2px solid transparent; transition: 0.2s; }
+        .selected .carousel-thumb { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); }
 
-        /* Calendar & General UI */
         .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
         .day { aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--dim); }
-        .day.complete { background: var(--neon); color: black; box-shadow: 0 0 15px rgba(255,153,0,0.4); }
+        .day.complete { background: var(--neon); color: black; }
+
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
         
-        /* Popups */
+        .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 3000; padding: 20px; }
         .celebrate { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
-        .celebrate h1 { color: var(--neon); font-size: 42px; text-shadow: 0 0 20px var(--neon); animation: bounce 1s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
     </style>
 </head>
 <body>
@@ -48,18 +43,19 @@
 
         const App = () => {
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_lib_v5') || '[]'));
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v5') || '{}'));
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_lib_v7') || '[]'));
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v7') || '{}'));
             const [selectedId, setSelectedId] = useState(null);
-            const [selectedDay, setSelectedDay] = useState(null);
             const [isDone, setIsDone] = useState(false);
+            const [editingVid, setEditingVid] = useState(null);
             const [workout, setWorkout] = useState({ plan: [], idx: 0, seconds: 0 });
 
             useEffect(() => {
-                localStorage.setItem('d20_lib_v5', JSON.stringify(lib));
-                localStorage.setItem('d20_hist_v5', JSON.stringify(hist));
+                localStorage.setItem('d20_lib_v7', JSON.stringify(lib));
+                localStorage.setItem('d20_hist_v7', JSON.stringify(hist));
             }, [lib, hist]);
 
+            // Timer logic
             useEffect(() => {
                 let timer;
                 if (view === 'workout' && workout.seconds > 0) {
@@ -68,47 +64,34 @@
                     if (workout.idx < workout.plan.length - 1) {
                         const nextIdx = workout.idx + 1;
                         setWorkout(w => ({ ...w, idx: nextIdx, seconds: parseInt(w.plan[nextIdx].dur) * 60 }));
-                    } else {
-                        finishSession();
-                    }
+                    } else { finishSession(); }
                 }
                 return () => clearInterval(timer);
             }, [view, workout.seconds]);
 
-            const getYTID = (u) => {
-                const match = u.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
-                return match ? match[1] : null;
+            const getYTID = (u) => u.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/)?.[1];
+
+            const handleUpdate = (e) => {
+                e.preventDefault();
+                const f = new FormData(e.target);
+                const updated = { ...editingVid, title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 };
+                setLib(lib.map(v => v.id === editingVid.id ? updated : v));
+                setEditingVid(null);
             };
 
             const startTraining = () => {
-                if (!lib.length) return alert("Add videos to your library first!");
-                
-                let plan = [];
-                let total = 0;
-
-                // 1. Add the selected carousel video first if it exists
+                if (!lib.length) return alert("Library empty!");
+                let plan = []; let total = 0;
                 if (selectedId) {
                     const picked = lib.find(v => v.id === selectedId);
-                    if (picked) {
-                        plan.push(picked);
-                        total += parseInt(picked.dur);
-                    }
+                    if (picked) { plan.push(picked); total += parseInt(picked.dur); }
                 }
-
-                // 2. Shuffle the rest of the library
                 const others = lib.filter(v => v.id !== selectedId).sort(() => 0.5 - Math.random());
-
-                // 3. Fill the remaining time up to 21 mins
                 for (let v of others) {
-                    if (total + parseInt(v.dur) <= 21) {
-                        plan.push(v);
-                        total += parseInt(v.dur);
-                    }
+                    if (total + parseInt(v.dur) <= 21) { plan.push(v); total += parseInt(v.dur); }
                 }
-
                 setWorkout({ plan, idx: 0, seconds: parseInt(plan[0].dur) * 60 });
                 setView('workout');
-                if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(() => {});
             };
 
             const finishSession = () => {
@@ -118,53 +101,35 @@
                     mins: Math.min(dayData.mins + 20, 20),
                     vids: [...new Set([...dayData.vids, ...workout.plan.map(v => v.title)])]
                 }});
-                setIsDone(true);
-                setView('home');
-                setSelectedId(null);
-                setWorkout({ plan: [], idx: 0, seconds: 0 });
+                setIsDone(true); setView('home'); setSelectedId(null);
                 setTimeout(() => setIsDone(false), 5000);
             };
 
             return (
                 <div className="container">
                     {isDone && <div className="celebrate" onClick={() => setIsDone(false)}><h1>MISSION COMPLETE</h1><p>20 MINS LOGGED</p></div>}
-                    
-                    <h1 style={{color: 'var(--neon)', textAlign:'center', letterSpacing:'-2px'}} onClick={() => setView('home')}>DAILY20</h1>
+                    <h1 style={{color: 'var(--neon)', textAlign:'center'}} onClick={() => setView('home')}>DAILY20</h1>
 
                     {view === 'home' && (
                         <div>
-                            <div className="card" style={{textAlign:'center', paddingBottom:'30px'}}>
-                                <span className="carousel-label">Select starting video (optional)</span>
-                                
+                            <div className="card" style={{textAlign:'center'}}>
                                 <div className="carousel">
-                                    {lib.length > 0 ? lib.map(v => (
-                                        <div 
-                                            key={v.id} 
-                                            className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`}
-                                            onClick={() => setSelectedId(selectedId === v.id ? null : v.id)}
-                                        >
-                                            <img 
-                                                className="carousel-thumb" 
-                                                src={`https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`} 
-                                                alt="thumb" 
-                                            />
-                                            <span className="carousel-title">{v.title}</span>
+                                    {lib.map(v => (
+                                        <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(selectedId === v.id ? null : v.id)}>
+                                            <img className="carousel-thumb" src={`https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`} />
+                                            <div style={{fontSize:'10px', marginTop:'5px', textOverflow:'ellipsis', overflow:'hidden', whiteSpace:'nowrap'}}>{v.title}</div>
                                         </div>
-                                    )) : <p style={{fontSize:'12px', color:'var(--dim)', width:'100%'}}>Library is empty</p>}
+                                    ))}
                                 </div>
-
-                                <button onClick={startTraining} style={{fontSize:'18px', padding:'18px'}}>
-                                    {selectedId ? 'Play Selected + Random' : 'Start Random 20m'}
-                                </button>
+                                <button onClick={startTraining}>{selectedId ? 'Play Selected + Random' : 'Start Random 20m'}</button>
                                 <button className="btn-sec" onClick={() => setView('lib')}>Manage Library</button>
                             </div>
-
                             <div className="calendar">
                                 {[...Array(28)].map((_, i) => {
                                     const d = new Date(); d.setDate(d.getDate() - (27 - i));
                                     const s = d.toISOString().split('T')[0];
                                     const day = hist[s];
-                                    return <div key={i} className={`day ${day?.mins >= 20 ? 'complete' : ''}`} onClick={() => day && setSelectedDay({date: s, ...day})}>{d.getDate()}</div>
+                                    return <div key={i} className={`day ${day?.mins >= 20 ? 'complete' : ''}`}>{d.getDate()}</div>
                                 })}
                             </div>
                         </div>
@@ -178,7 +143,7 @@
                                 setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 }, ...lib]);
                                 e.target.reset();
                             }}>
-                                <h3>Add New Workout</h3>
+                                <h3>Add Video</h3>
                                 <input name="u" placeholder="YouTube URL" required />
                                 <input name="t" placeholder="Title" required />
                                 <div style={{display:'flex', gap:'10px'}}>
@@ -191,14 +156,14 @@
                             <div className="card">
                                 {lib.map(v => (
                                     <div key={v.id} className="lib-row">
-                                        <div style={{display:'flex', alignItems:'center'}}>
-                                            <img src={`https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`} style={{width:'50px', borderRadius:'5px', marginRight:'10px'}} />
-                                            <div>
-                                                <div style={{fontWeight:'bold', fontSize:'13px'}}>{v.title}</div>
-                                                <div style={{fontSize:'11px', color:'var(--dim)'}}>{v.dur}m | Start: {v.start}s</div>
-                                            </div>
+                                        <div style={{display:'flex', alignItems:'center', flexGrow: 1}}>
+                                            <img src={`https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`} style={{width:'40px', borderRadius:'4px', marginRight:'10px'}} />
+                                            <span style={{fontSize:'13px'}}>{v.title}</span>
                                         </div>
-                                        <button onClick={() => setLib(lib.filter(x => x.id !== v.id))} style={{background:'var(--danger)', width:'30px', padding:'5px'}}>✕</button>
+                                        <div style={{display:'flex', gap:'10px'}}>
+                                            <button onClick={() => setEditingVid(v)} style={{background:'var(--info)', width:'35px', padding:'5px'}}>✎</button>
+                                            <button onClick={() => setLib(lib.filter(x => x.id !== v.id))} style={{background:'var(--danger)', width:'35px', padding:'5px'}}>✕</button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -206,38 +171,38 @@
                         </div>
                     )}
 
-                    {view === 'workout' && workout.plan.length > 0 && (
+                    {editingVid && (
+                        <div className="modal-overlay">
+                            <form className="card" style={{width:'85%'}} onSubmit={handleUpdate}>
+                                <h3 style={{marginTop:0}}>Edit Workout</h3>
+                                <input name="u" defaultValue={editingVid.url} placeholder="YouTube URL" required />
+                                <input name="t" defaultValue={editingVid.title} placeholder="Title" required />
+                                <div style={{display:'flex', gap:'10px'}}>
+                                    <input name="d" type="number" defaultValue={editingVid.dur} placeholder="Mins" required />
+                                    <input name="s" type="number" defaultValue={editingVid.start} placeholder="Start at (Secs)" />
+                                </div>
+                                <button type="submit">Save Changes</button>
+                                <button type="button" className="btn-sec" onClick={() => setEditingVid(null)}>Cancel</button>
+                            </form>
+                        </div>
+                    )}
+
+                    {view === 'workout' && (
                         <div style={{textAlign: 'center'}}>
                             <div className="video-container">
-                                <iframe src={`https://www.youtube.com/embed/${getYTID(workout.plan[workout.idx].url)}?autoplay=1&start=${workout.plan[workout.idx].start}&rel=0`} allow="autoplay" allowFullScreen></iframe>
+                                <iframe src={`https://www.youtube.com/embed/${getYTID(workout.plan[workout.idx].url)}?autoplay=1&start=${workout.plan[workout.idx].start}`} allow="autoplay" allowFullScreen></iframe>
                             </div>
                             <div style={{fontSize:'54px', fontWeight:'900', color:'var(--neon)'}}>
                                 {Math.floor(workout.seconds / 60)}:{(workout.seconds % 60).toString().padStart(2, '0')}
                             </div>
-                            <h3 style={{margin:'10px 0'}}>{workout.plan[workout.idx].title}</h3>
-                            <button className="btn-sec" style={{color:'var(--danger)'}} onClick={() => {if(confirm("Quit?")) setView('home')}}>Quit Session</button>
-                        </div>
-                    )}
-
-                    {selectedDay && (
-                        <div className="modal-overlay" onClick={() => setSelectedDay(null)}>
-                            <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
-                                <h2>{selectedDay.date}</h2>
-                                <p>Progress: {selectedDay.mins} / 20 mins</p>
-                                <div style={{textAlign:'left', fontSize:'13px', maxHeight:'150px', overflowY:'auto'}}>
-                                    {selectedDay.vids.map((v, i) => <div key={i} style={{padding:'5px 0', borderBottom:'1px solid #333'}}>• {v}</div>)}
-                                </div>
-                                <button className="btn-sec" style={{color:'var(--danger)', marginTop:'15px'}} onClick={() => { if(confirm("Reset?")){ const n = {...hist}; delete n[selectedDay.date]; setHist(n); setSelectedDay(null); } }}>Reset Day</button>
-                                <button className="btn-sec" onClick={() => setSelectedDay(null)}>Close</button>
-                            </div>
+                            <h3>{workout.plan[workout.idx].title}</h3>
+                            <button className="btn-sec" onClick={() => setView('home')}>Quit</button>
                         </div>
                     )}
                 </div>
             );
         };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
