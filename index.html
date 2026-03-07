@@ -3,57 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | Full-Frame Reels</title>
+    <title>Daily20 Pro | v19</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --info: #3498db; --warning: #f39c12; --success: #2ecc71; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow: hidden; }
-        .container { max-width: 500px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-y: auto; }
+        .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
         .card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; position: relative; }
         input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
         button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
         .btn-sec { background: #333; color: white; margin-top: 10px; }
         
-        /* Workout View Layout */
-        .workout-container { display: flex; flex-direction: column; height: 100%; justify-content: space-between; padding-bottom: 20px; }
-        
-        /* DYNAMIC PLAYER WRAPPER */
-        .player-wrapper { 
-            width: 100%; 
-            border-radius: 16px; 
-            overflow: hidden; 
-            background: #000; 
-            border: 1px solid #333;
-            flex-grow: 1; /* Grows to fill space */
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Specific Ratios */
-        .ratio-yt { aspect-ratio: 16/9; flex-grow: 0; } /* YT stays widescreen */
-        .ratio-insta { width: 100%; height: 100%; } /* Insta fills the growth area */
-        
+        /* PLAYER LOGIC */
+        .player-wrapper { width: 100%; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid #333; margin-bottom: 10px; position: relative; }
+        .ratio-yt { aspect-ratio: 16/9; }
+        .ratio-insta { aspect-ratio: 9/16; max-height: 60vh; } /* Vertical but bounded */
         #yt-player, .insta-player { width: 100%; height: 100%; border: 0; display: block; }
 
-        /* Calendar */
+        /* LIBRARY & CALENDAR */
         .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 6px; background: #2a2a2a; color: #555; }
         .active-month { color: var(--text); }
         .complete { background: var(--neon); color: black; font-weight: bold; }
         .today { border: 1px solid var(--neon); }
-        .nav-btn { background: #333; color: white; padding: 4px 10px; width: auto; font-size: 14px; }
-
+        
+        .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
+        .icon-btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .icon-btn { background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 10px; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        
         .carousel { display: flex; overflow-x: auto; gap: 10px; padding: 5px; margin-bottom: 10px; }
         .carousel-item { flex: 0 0 80px; text-align: center; }
         .carousel-thumb { width: 80px; height: 50px; border-radius: 8px; object-fit: cover; border: 2px solid transparent; }
         .selected .carousel-thumb { border-color: var(--neon); }
-        .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
     </style>
 </head>
 <body>
@@ -64,8 +49,8 @@
 
         const App = () => {
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_restore_v18') || '[]'));
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v18') || '{}'));
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_final_v19') || '[]'));
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v19') || '{}'));
             const [selectedId, setSelectedId] = useState(null);
             const [editingVid, setEditingVid] = useState(null);
             const [calDate, setCalDate] = useState(new Date());
@@ -75,8 +60,8 @@
             const playerRef = useRef(null);
 
             useEffect(() => {
-                localStorage.setItem('d20_restore_v18', JSON.stringify(lib));
-                localStorage.setItem('d20_hist_v18', JSON.stringify(hist));
+                localStorage.setItem('d20_final_v19', JSON.stringify(lib));
+                localStorage.setItem('d20_hist_v19', JSON.stringify(hist));
             }, [lib, hist]);
 
             const getYTID = (u) => u?.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/)?.[1];
@@ -123,7 +108,7 @@
                 setView('home'); setSelectedId(null);
             };
 
-            // Calendar Logic
+            // Calendar Build
             const daysArr = [];
             const firstDay = new Date(calDate.getFullYear(), calDate.getMonth(), 1).getDay();
             const lastDate = new Date(calDate.getFullYear(), calDate.getMonth() + 1, 0).getDate();
@@ -139,7 +124,7 @@
                     <h1 style={{color:'var(--neon)', textAlign:'center', margin:'10px 0'}} onClick={() => {setView('home'); setIsPlaying(false);}}>DAILY20</h1>
 
                     {view === 'home' && (
-                        <div style={{overflowY:'auto'}}>
+                        <div>
                             <div className="card" style={{textAlign:'center'}}>
                                 <div className="carousel">
                                     {lib.map(v => (
@@ -154,15 +139,15 @@
                                     const plan = selectedId ? [lib.find(v => v.id === selectedId), ...lib.filter(v => v.id !== selectedId)].slice(0,4) : lib.sort(() => 0.5 - Math.random()).slice(0,4);
                                     setWorkout({ plan, idx: 0, seconds: parseInt(plan[0].dur) * 60 });
                                     setView('workout');
-                                }}>Start 20m Training</button>
+                                }}>Start Training</button>
                                 <button className="btn-sec" onClick={() => setView('lib')}>Manage Library</button>
                             </div>
 
                             <div className="card">
                                 <div className="cal-header">
-                                    <button className="nav-btn" onClick={() => setCalDate(new Date(calDate.setMonth(calDate.getMonth()-1)))}>&lt;</button>
+                                    <button style={{width:'auto', padding:'5px 10px'}} onClick={() => setCalDate(new Date(calDate.setMonth(calDate.getMonth()-1)))}>&lt;</button>
                                     <h4 style={{margin:0}}>{calDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h4>
-                                    <button className="nav-btn" onClick={() => setCalDate(new Date(calDate.setMonth(calDate.getMonth()+1)))}>&gt;</button>
+                                    <button style={{width:'auto', padding:'5px 10px'}} onClick={() => setCalDate(new Date(calDate.setMonth(calDate.getMonth()+1)))}>&gt;</button>
                                 </div>
                                 <div className="cal-grid">
                                     {['S','M','T','W','T','F','S'].map(d => <div key={d} style={{textAlign:'center', fontSize:'9px', color:'var(--dim)'}}>{d}</div>)}
@@ -177,14 +162,14 @@
                     )}
 
                     {view === 'lib' && (
-                        <div style={{overflowY:'auto'}}>
+                        <div>
                             <form className="card" onSubmit={e => {
                                 e.preventDefault(); const f = new FormData(e.target);
                                 setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 }, ...lib]);
                                 e.target.reset();
                             }}>
                                 <h3>Add Video</h3>
-                                <input name="u" placeholder="URL (YT/Insta)" required />
+                                <input name="u" placeholder="URL (YouTube or Instagram)" required />
                                 <input name="t" placeholder="Title" required />
                                 <div style={{display:'flex', gap:'10px'}}>
                                     <input name="d" type="number" placeholder="Mins" required />
@@ -192,23 +177,36 @@
                                 </div>
                                 <button type="submit">Add to List</button>
                             </form>
+                            
                             <div className="card">
                                 {lib.map(v => (
                                     <div key={v.id} className="lib-row">
-                                        <span style={{fontSize:'12px'}}>{v.title}</span>
+                                        <span style={{fontSize:'13px'}}>{v.title}</span>
                                         <div style={{display:'flex', gap:'5px'}}>
-                                            <button onClick={() => setEditingVid(v)} style={{background:'var(--info)', padding:'5px', width:'30px'}}>✎</button>
-                                            <button onClick={() => setLib(lib.filter(x => x.id !== v.id))} style={{background:'var(--danger)', padding:'5px', width:'30px'}}>✕</button>
+                                            <button onClick={() => setEditingVid(v)} style={{background:'var(--info)', width:'35px', padding:'5px'}}>✎</button>
+                                            <button onClick={() => setLib(lib.filter(x => x.id !== v.id))} style={{background:'var(--danger)', width:'35px', padding:'5px'}}>✕</button>
                                         </div>
                                     </div>
                                 ))}
+                                <div className="icon-btn-group">
+                                    <button className="icon-btn" onClick={() => {
+                                        const blob = new Blob([JSON.stringify(lib)], {type:'application/json'});
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a'); a.href = url; a.download = 'daily20_v19.json'; a.click();
+                                    }}>Export</button>
+                                    <label className="icon-btn">Import
+                                        <input type="file" style={{display:'none'}} onChange={e => {
+                                            const r = new FileReader(); r.onload = (ev) => setLib(JSON.parse(ev.target.result)); r.readAsText(e.target.files[0]);
+                                        }} />
+                                    </label>
+                                </div>
                             </div>
                             <button className="btn-sec" onClick={() => setView('home')}>Back</button>
                         </div>
                     )}
 
                     {view === 'workout' && (
-                        <div className="workout-container">
+                        <div style={{textAlign:'center'}}>
                             <div className={`player-wrapper ${isInsta(workout.plan[workout.idx].url) ? 'ratio-insta' : 'ratio-yt'}`}>
                                 {isInsta(workout.plan[workout.idx].url) ? (
                                     <iframe className="insta-player" src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowTransparency="true" allowFullScreen></iframe>
@@ -217,7 +215,7 @@
                                 )}
                             </div>
                             
-                            <div style={{textAlign:'center'}}>
+                            <div className="card" style={{padding:'10px', marginTop:'0'}}>
                                 <div style={{fontSize:'48px', fontWeight:'900', color: (isPlaying && !timerOverride) ? 'var(--neon)' : 'var(--dim)', lineHeight:1}}>
                                     {Math.floor(workout.seconds/60)}:{(workout.seconds%60).toString().padStart(2,'0')}
                                 </div>
@@ -236,13 +234,13 @@
                     )}
 
                     {editingVid && (
-                        <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:4000}}>
-                            <form className="card" style={{width:'85%'}} onSubmit={e => {
+                        <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:4000, padding:'20px'}}>
+                            <form className="card" style={{width:'100%'}} onSubmit={e => {
                                 e.preventDefault(); const f = new FormData(e.target);
                                 setLib(lib.map(v => v.id === editingVid.id ? {...v, title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 } : v));
                                 setEditingVid(null);
                             }}>
-                                <h3>Edit</h3>
+                                <h3>Edit Video</h3>
                                 <input name="u" defaultValue={editingVid.url} required />
                                 <input name="t" defaultValue={editingVid.title} required />
                                 <input name="d" type="number" defaultValue={editingVid.dur} required />
