@@ -1,37 +1,202 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Daily20 Pro</title>
-<script src=""></script>
-<script src=""></script>
-<script src=""></script>
-<style>
-:root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; }
-body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 15px; }
-.container { max-width: 500px; margin: 0 auto; }
-.card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; }
-input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
-button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; font-size: 14px; }
-.btn-sec { background: #333; color: white; margin-top: 10px; }
-.calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
-.day { aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; cursor: pointer; color: var(--dim); font-weight: bold; }
-.day.complete { background: var(--neon); color: black; box-shadow: 0 0 15px rgba(255,153,0,0.4); }
-.day.partial { border: 2px solid var(--neon); color: var(--neon); }
-.video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 16px; margin-bottom: 20px; background: #000; }
-.video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal-content { background: var(--card); width: 100%; max-width: 400px; padding: 25px; border-radius: 20px; border: 1px solid #444; text-align: center; }
-.celebrate { position: fixed; inset: 0; background: rgba(18,18,18,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daily20 Pro</title>
+    <style>
+        :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 15px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; text-align: center; }
+        input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; margin-top: 5px; }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
+        .day { aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; color: var(--dim); cursor: pointer; }
+        .complete { background: var(--neon); color: black; box-shadow: 0 0 10px var(--neon); }
+        .hidden { display: none; }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        #timer { font-size: 48px; color: var(--neon); font-weight: 900; margin: 10px 0; }
+        #celebrate { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 100; color: var(--neon); font-size: 30px; font-weight: 900; text-align: center; }
+    </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect } = React;
 
+    <div id="celebrate" class="hidden">MISSION COMPLETE!<br>20 MINS LOGGED</div>
+
+    <div class="container">
+        <h1 style="color: var(--neon)" onclick="showView('home')">DAILY20</h1>
+
+        <div id="view-home">
+            <div class="card">
+                <h2>Today's Goal</h2>
+                <button onclick="startWorkout()">Start 20-Min Session</button>
+                <button style="background: #333; color: white;" onclick="showView('lib')">Edit Library</button>
+            </div>
+            <div class="calendar" id="calendar-grid"></div>
+        </div>
+
+        <div id="view-lib" class="hidden">
+            <div class="card">
+                <h3>Add YouTube Video</h3>
+                <input id="lib-url" placeholder="YouTube URL">
+                <input id="lib-title" placeholder="Title (e.g. Abs)">
+                <input id="lib-dur" type="number" placeholder="Minutes">
+                <button onclick="addToLibrary()">Add Video</button>
+            </div>
+            <div id="lib-list"></div>
+            <button style="background: #333; color: white;" onclick="showView('home')">Back</button>
+        </div>
+
+        <div id="view-workout" class="hidden">
+            <div class="video-container" id="player-target"></div>
+            <div id="timer">20:00</div>
+            <h3 id="current-title">Workout</h3>
+            <button style="background: #444; color: white;" onclick="quitWorkout()">Quit</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA & STATE ---
+        let library = JSON.parse(localStorage.getItem('d20_lib') || '[]');
+        let history = JSON.parse(localStorage.getItem('d20_hist') || '{}');
+        let currentPlan = [];
+        let planIdx = 0;
+        let secondsLeft = 0;
+        let timerInterval = null;
+
+        // --- NAVIGATION ---
+        function showView(viewName) {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-lib').classList.add('hidden');
+            document.getElementById('view-workout').classList.add('hidden');
+            document.getElementById('view-' + viewName).classList.remove('hidden');
+            if(viewName === 'home') renderCalendar();
+            if(viewName === 'lib') renderLibrary();
+        }
+
+        // --- LIBRARY LOGIC ---
+        function addToLibrary() {
+            const url = document.getElementById('lib-url').value;
+            const title = document.getElementById('lib-title').value;
+            const dur = parseInt(document.getElementById('lib-dur').value);
+            if(!url || !title || !dur) return alert("Fill all fields");
+            
+            library.push({ id: Date.now(), url, title, dur });
+            localStorage.setItem('d20_lib', JSON.stringify(library));
+            document.getElementById('lib-url').value = '';
+            document.getElementById('lib-title').value = '';
+            document.getElementById('lib-dur').value = '';
+            renderLibrary();
+        }
+
+        function renderLibrary() {
+            const list = document.getElementById('lib-list');
+            list.innerHTML = library.map(v => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>${v.title} (${v.dur}m)</span>
+                    <button onclick="deleteLib(${v.id})" style="width:auto; background:red; padding: 5px 10px;">X</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteLib(id) {
+            library = library.filter(v => v.id !== id);
+            localStorage.setItem('d20_lib', JSON.stringify(library));
+            renderLibrary();
+        }
+
+        // --- WORKOUT LOGIC ---
+        function getYTID(url) {
+            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
+            return match ? match[1] : null;
+        }
+
+        function startWorkout() {
+            if(library.length === 0) return alert("Add videos to library first!");
+            
+            // Shuffle and Pick up to 20 mins
+            let shuffled = [...library].sort(() => 0.5 - Math.random());
+            currentPlan = [];
+            let total = 0;
+            for(let v of shuffled) {
+                if(total + v.dur <= 21) {
+                    currentPlan.push(v);
+                    total += v.dur;
+                }
+            }
+            
+            planIdx = 0;
+            loadVideo();
+            showView('workout');
+            
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(tick, 1000);
+        }
+
+        function loadVideo() {
+            const vid = currentPlan[planIdx];
+            secondsLeft = vid.dur * 60;
+            document.getElementById('current-title').innerText = vid.title;
+            document.getElementById('player-target').innerHTML = `
+                <iframe src="https://www.youtube.com/embed/${getYTID(vid.url)}?autoplay=1" allow="autoplay"></iframe>
+            `;
+        }
+
+        function tick() {
+            if (secondsLeft > 0) {
+                secondsLeft--;
+                const m = Math.floor(secondsLeft / 60);
+                const s = secondsLeft % 60;
+                document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            } else {
+                if (planIdx < currentPlan.length - 1) {
+                    planIdx++;
+                    loadVideo();
+                } else {
+                    finishSession();
+                }
+            }
+        }
+
+        function finishSession() {
+            clearInterval(timerInterval);
+            const today = new Date().toISOString().split('T')[0];
+            history[today] = true;
+            localStorage.setItem('d20_hist', JSON.stringify(history));
+            
+            document.getElementById('celebrate').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('celebrate').classList.add('hidden');
+                showView('home');
+            }, 4000);
+        }
+
+        function quitWorkout() {
+            if(confirm("Quit workout?")) {
+                clearInterval(timerInterval);
+                showView('home');
+            }
+        }
+
+        // --- CALENDAR LOGIC ---
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            for(let i = 0; i < 28; i++) {
+                const d = new Date();
+                d.setDate(d.getDate() - (27 - i));
+                const s = d.toISOString().split('T')[0];
+                const dayDiv = document.createElement('div');
+                dayDiv.className = `day ${history[s] ? 'complete' : ''}`;
+                dayDiv.innerText = d.getDate();
+                grid.appendChild(dayDiv);
+            }
+        }
+
+        // Init
+        renderCalendar();
+    </script>
 </body>
 </html>
