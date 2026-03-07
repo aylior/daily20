@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | Editor</title>
+    <title>Daily20 Pro | Complete</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --info: #3498db; }
+        :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --info: #3498db; --success: #2ecc71; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 60px; }
         .card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; position: relative; }
         input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
         button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
         .btn-sec { background: #333; color: white; margin-top: 10px; }
-        .btn-outline { background: transparent; border: 1px solid #444; color: var(--dim); margin-top: 10px; font-size: 12px; }
+        .btn-outline { background: transparent; border: 1px solid #444; color: var(--dim); margin-top: 10px; font-size: 12px; width: 100%; }
         
         .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scroll-snap-type: x mandatory; margin-bottom: 15px; }
         .carousel::-webkit-scrollbar { display: none; }
         .carousel-item { scroll-snap-align: start; flex: 0 0 120px; cursor: pointer; text-align: center; }
         .carousel-thumb { width: 120px; height: 75px; border-radius: 10px; object-fit: cover; border: 2px solid transparent; transition: 0.2s; }
-        .selected .carousel-thumb { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); }
+        .selected .carousel-thumb { border-color: var(--neon); box-shadow: 0 0 15px var(--neon); transform: scale(1.05); }
 
         .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
         .day { aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--dim); }
@@ -30,7 +30,7 @@
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         
-        .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
+        .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 3000; padding: 20px; }
         .celebrate { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
     </style>
@@ -43,19 +43,18 @@
 
         const App = () => {
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_lib_v7') || '[]'));
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v7') || '{}'));
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_final_v8') || '[]'));
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v8') || '{}'));
             const [selectedId, setSelectedId] = useState(null);
             const [isDone, setIsDone] = useState(false);
             const [editingVid, setEditingVid] = useState(null);
             const [workout, setWorkout] = useState({ plan: [], idx: 0, seconds: 0 });
 
             useEffect(() => {
-                localStorage.setItem('d20_lib_v7', JSON.stringify(lib));
-                localStorage.setItem('d20_hist_v7', JSON.stringify(hist));
+                localStorage.setItem('d20_final_v8', JSON.stringify(lib));
+                localStorage.setItem('d20_hist_v8', JSON.stringify(hist));
             }, [lib, hist]);
 
-            // Timer logic
             useEffect(() => {
                 let timer;
                 if (view === 'workout' && workout.seconds > 0) {
@@ -69,14 +68,25 @@
                 return () => clearInterval(timer);
             }, [view, workout.seconds]);
 
-            const getYTID = (u) => u.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/)?.[1];
+            const getYTID = (u) => u?.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/)?.[1];
 
-            const handleUpdate = (e) => {
-                e.preventDefault();
-                const f = new FormData(e.target);
-                const updated = { ...editingVid, title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 };
-                setLib(lib.map(v => v.id === editingVid.id ? updated : v));
-                setEditingVid(null);
+            // --- DATA FUNCTIONS ---
+            const exportData = () => {
+                const blob = new Blob([JSON.stringify(lib, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'daily20_backup.json'; a.click();
+            };
+
+            const importData = (e) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        if(Array.isArray(data)) { setLib([...data, ...lib]); alert("Imported!"); }
+                    } catch(err) { alert("Invalid File"); }
+                };
+                reader.readAsText(e.target.files[0]);
             };
 
             const startTraining = () => {
@@ -87,9 +97,7 @@
                     if (picked) { plan.push(picked); total += parseInt(picked.dur); }
                 }
                 const others = lib.filter(v => v.id !== selectedId).sort(() => 0.5 - Math.random());
-                for (let v of others) {
-                    if (total + parseInt(v.dur) <= 21) { plan.push(v); total += parseInt(v.dur); }
-                }
+                for (let v of others) { if (total + parseInt(v.dur) <= 21) { plan.push(v); total += parseInt(v.dur); } }
                 setWorkout({ plan, idx: 0, seconds: parseInt(plan[0].dur) * 60 });
                 setView('workout');
             };
@@ -98,8 +106,7 @@
                 const today = new Date().toISOString().split('T')[0];
                 const dayData = hist[today] || { mins: 0, vids: [] };
                 setHist({ ...hist, [today]: {
-                    mins: Math.min(dayData.mins + 20, 20),
-                    vids: [...new Set([...dayData.vids, ...workout.plan.map(v => v.title)])]
+                    mins: 20, vids: [...new Set([...dayData.vids, ...workout.plan.map(v => v.title)])]
                 }});
                 setIsDone(true); setView('home'); setSelectedId(null);
                 setTimeout(() => setIsDone(false), 5000);
@@ -108,7 +115,7 @@
             return (
                 <div className="container">
                     {isDone && <div className="celebrate" onClick={() => setIsDone(false)}><h1>MISSION COMPLETE</h1><p>20 MINS LOGGED</p></div>}
-                    <h1 style={{color: 'var(--neon)', textAlign:'center'}} onClick={() => setView('home')}>DAILY20</h1>
+                    <h1 style={{color: 'var(--neon)', textAlign:'center', cursor:'pointer'}} onClick={() => setView('home')}>DAILY20</h1>
 
                     {view === 'home' && (
                         <div>
@@ -128,8 +135,7 @@
                                 {[...Array(28)].map((_, i) => {
                                     const d = new Date(); d.setDate(d.getDate() - (27 - i));
                                     const s = d.toISOString().split('T')[0];
-                                    const day = hist[s];
-                                    return <div key={i} className={`day ${day?.mins >= 20 ? 'complete' : ''}`}>{d.getDate()}</div>
+                                    return <div key={i} className={`day ${hist[s] ? 'complete' : ''}`}>{d.getDate()}</div>
                                 })}
                             </div>
                         </div>
@@ -160,12 +166,21 @@
                                             <img src={`https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`} style={{width:'40px', borderRadius:'4px', marginRight:'10px'}} />
                                             <span style={{fontSize:'13px'}}>{v.title}</span>
                                         </div>
-                                        <div style={{display:'flex', gap:'10px'}}>
+                                        <div style={{display:'flex', gap:'8px'}}>
                                             <button onClick={() => setEditingVid(v)} style={{background:'var(--info)', width:'35px', padding:'5px'}}>✎</button>
                                             <button onClick={() => setLib(lib.filter(x => x.id !== v.id))} style={{background:'var(--danger)', width:'35px', padding:'5px'}}>✕</button>
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+
+                            <div className="card" style={{textAlign:'center'}}>
+                                <h4>Data Management</h4>
+                                <button className="btn-outline" onClick={exportData}>Export Library (.json)</button>
+                                <label className="btn-outline" style={{display:'block', padding:'10px', marginTop:'10px', cursor:'pointer'}}>
+                                    Import Library
+                                    <input type="file" style={{display:'none'}} onChange={importData} accept=".json" />
+                                </label>
                             </div>
                             <button className="btn-sec" onClick={() => setView('home')}>Back</button>
                         </div>
@@ -173,15 +188,20 @@
 
                     {editingVid && (
                         <div className="modal-overlay">
-                            <form className="card" style={{width:'85%'}} onSubmit={handleUpdate}>
+                            <form className="card" style={{width:'85%'}} onSubmit={(e) => {
+                                e.preventDefault();
+                                const f = new FormData(e.target);
+                                setLib(lib.map(v => v.id === editingVid.id ? {...v, title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 } : v));
+                                setEditingVid(null);
+                            }}>
                                 <h3 style={{marginTop:0}}>Edit Workout</h3>
-                                <input name="u" defaultValue={editingVid.url} placeholder="YouTube URL" required />
+                                <input name="u" defaultValue={editingVid.url} placeholder="URL" required />
                                 <input name="t" defaultValue={editingVid.title} placeholder="Title" required />
                                 <div style={{display:'flex', gap:'10px'}}>
                                     <input name="d" type="number" defaultValue={editingVid.dur} placeholder="Mins" required />
-                                    <input name="s" type="number" defaultValue={editingVid.start} placeholder="Start at (Secs)" />
+                                    <input name="s" type="number" defaultValue={editingVid.start} placeholder="Start Secs" />
                                 </div>
-                                <button type="submit">Save Changes</button>
+                                <button type="submit">Save</button>
                                 <button type="button" className="btn-sec" onClick={() => setEditingVid(null)}>Cancel</button>
                             </form>
                         </div>
