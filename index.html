@@ -3,26 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | Final</title>
+    <title>Daily20 Pro | Thumbnails</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 60px; }
         .card { background: var(--card); padding: 20px; border-radius: 16px; margin-bottom: 15px; border: 1px solid #333; position: relative; }
         input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; width: 100%; box-sizing: border-box; font-size: 16px; }
-        button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        button:active { transform: scale(0.98); }
+        button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
         .btn-sec { background: #333; color: white; margin-top: 10px; }
         .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
         .day { aspect-ratio: 1; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; color: var(--dim); }
         .day.complete { background: var(--neon); color: black; box-shadow: 0 0 15px rgba(255,153,0,0.4); }
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 16px; overflow: hidden; background: #000; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        .celebrate { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; }
-        .celebrate h1 { color: var(--neon); font-size: 42px; margin: 0; text-shadow: 0 0 20px var(--neon); animation: bounce 1s infinite; }
+        
+        /* Thumbnail Styles */
+        .thumb-box { width: 80px; height: 50px; border-radius: 8px; overflow: hidden; margin-right: 15px; background: #000; flex-shrink: 0; }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
+        .lib-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2a2a2a; }
+        .lib-info { display: flex; align-items: center; flex-grow: 1; }
+
+        .celebrate { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .celebrate h1 { color: var(--neon); font-size: 42px; text-shadow: 0 0 20px var(--neon); animation: bounce 1s infinite; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
     </style>
@@ -31,139 +37,87 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect } = React;
 
         const App = () => {
-            // Persistent State
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_lib_final') || '[]'));
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_final') || '{}'));
-            
-            // UI State
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_lib_v4') || '[]'));
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist_v4') || '{}'));
             const [selectedDay, setSelectedDay] = useState(null);
             const [isDone, setIsDone] = useState(false);
-            
-            // Workout Engine State
             const [workout, setWorkout] = useState({ plan: [], idx: 0, seconds: 0 });
 
-            // Sync with LocalStorage
             useEffect(() => {
-                localStorage.setItem('d20_lib_final', JSON.stringify(lib));
-                localStorage.setItem('d20_hist_final', JSON.stringify(hist));
+                localStorage.setItem('d20_lib_v4', JSON.stringify(lib));
+                localStorage.setItem('d20_hist_v4', JSON.stringify(hist));
             }, [lib, hist]);
 
-            // Core Timer Logic
             useEffect(() => {
                 let timer;
                 if (view === 'workout' && workout.seconds > 0) {
-                    timer = setInterval(() => {
-                        setWorkout(w => ({ ...w, seconds: w.seconds - 1 }));
-                    }, 1000);
+                    timer = setInterval(() => setWorkout(w => ({ ...w, seconds: w.seconds - 1 })), 1000);
                 } else if (view === 'workout' && workout.seconds === 0 && workout.plan.length > 0) {
-                    // Current video finished
                     if (workout.idx < workout.plan.length - 1) {
                         const nextIdx = workout.idx + 1;
-                        setWorkout(w => ({ 
-                            ...w, 
-                            idx: nextIdx, 
-                            seconds: parseInt(w.plan[nextIdx].dur) * 60 
-                        }));
+                        setWorkout(w => ({ ...w, idx: nextIdx, seconds: parseInt(w.plan[nextIdx].dur) * 60 }));
                     } else {
-                        // Entire workout finished
                         finishSession();
                     }
                 }
                 return () => clearInterval(timer);
             }, [view, workout.seconds]);
 
+            const getYTID = (u) => {
+                const match = u.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
+                return match ? match[1] : null;
+            };
+
             const startTraining = () => {
-                if (!lib.length) return alert("Your library is empty. Add some videos first!");
-                
-                // Shuffle logic
+                if (!lib.length) return alert("Add videos first!");
                 const shuffled = [...lib].sort(() => 0.5 - Math.random());
-                let plan = [];
-                let totalMins = 0;
-                
+                let plan = [], total = 0;
                 for (let v of shuffled) {
-                    const d = parseInt(v.dur);
-                    if (totalMins + d <= 21) { // Allowance for 20-21 mins
+                    if (total + parseInt(v.dur) <= 21) {
                         plan.push(v);
-                        totalMins += d;
+                        total += parseInt(v.dur);
                     }
                 }
-
-                if (plan.length === 0) return alert("Videos are too long to fit a 20min session!");
-
-                setWorkout({ 
-                    plan, 
-                    idx: 0, 
-                    seconds: parseInt(plan[0].dur) * 60 
-                });
+                setWorkout({ plan, idx: 0, seconds: parseInt(plan[0].dur) * 60 });
                 setView('workout');
-                
-                // Keep screen on
                 if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(() => {});
             };
 
             const finishSession = () => {
                 const today = new Date().toISOString().split('T')[0];
                 const dayData = hist[today] || { mins: 0, vids: [] };
-                
-                const updated = {
+                setHist({ ...hist, [today]: {
                     mins: Math.min(dayData.mins + 20, 20),
                     vids: [...new Set([...dayData.vids, ...workout.plan.map(v => v.title)])]
-                };
-
-                setHist({ ...hist, [today]: updated });
+                }});
                 setIsDone(true);
                 setView('home');
-                // Reset workout state
                 setWorkout({ plan: [], idx: 0, seconds: 0 });
-                // Auto-hide celebration after 5 seconds
                 setTimeout(() => setIsDone(false), 5000);
-            };
-
-            const getYTID = (u) => {
-                const match = u.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
-                return match ? match[1] : null;
             };
 
             return (
                 <div className="container">
-                    {/* FIXED: Celebration Overlay is now clickable and guarded */}
-                    {isDone && (
-                        <div className="celebrate" onClick={() => setIsDone(false)}>
-                            <h1>MISSION COMPLETE</h1>
-                            <p style={{fontWeight:'bold', marginTop:'10px'}}>20 MINUTES LOGGED</p>
-                            <p style={{fontSize:'12px', opacity:0.6}}>(Tap to dismiss)</p>
-                        </div>
-                    )}
-
-                    <header style={{textAlign:'center', padding:'20px 0'}}>
-                        <h1 style={{color: 'var(--neon)', margin:0, cursor:'pointer'}} onClick={() => setView('home')}>DAILY20</h1>
-                        <p style={{fontSize:'12px', color: 'var(--dim)', margin:0}}>PRO TRAINER v4.1</p>
-                    </header>
+                    {isDone && <div className="celebrate" onClick={() => setIsDone(false)}><h1>MISSION COMPLETE</h1><p>20 MINS LOGGED</p></div>}
+                    
+                    <h1 style={{color: 'var(--neon)', textAlign:'center'}} onClick={() => setView('home')}>DAILY20</h1>
 
                     {view === 'home' && (
                         <div>
                             <div className="card" style={{textAlign:'center'}}>
-                                <h2 style={{marginTop:0}}>Ready to Work?</h2>
-                                <button onClick={startTraining} style={{fontSize:'18px', padding:'18px'}}>Start 20-Min Session</button>
+                                <button onClick={startTraining} style={{fontSize:'18px'}}>Start 20-Min Session</button>
                                 <button className="btn-sec" onClick={() => setView('lib')}>Manage Library</button>
                             </div>
-
                             <div className="calendar">
                                 {[...Array(28)].map((_, i) => {
                                     const d = new Date(); d.setDate(d.getDate() - (27 - i));
                                     const s = d.toISOString().split('T')[0];
                                     const day = hist[s];
-                                    return (
-                                        <div key={i} 
-                                             className={`day ${day?.mins >= 20 ? 'complete' : ''}`} 
-                                             onClick={() => day && setSelectedDay({date: s, ...day})}>
-                                            {d.getDate()}
-                                        </div>
-                                    );
+                                    return <div key={i} className={`day ${day?.mins >= 20 ? 'complete' : ''}`} onClick={() => day && setSelectedDay({date: s, ...day})}>{d.getDate()}</div>
                                 })}
                             </div>
                         </div>
@@ -174,73 +128,61 @@
                             <form className="card" onSubmit={e => {
                                 e.preventDefault();
                                 const f = new FormData(e.target);
-                                const newVid = {
-                                    id: Date.now(),
-                                    title: f.get('t'),
-                                    url: f.get('u'),
-                                    dur: f.get('d'),
-                                    start: f.get('s') || 0
-                                };
-                                setLib([newVid, ...lib]);
+                                setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), dur: f.get('d'), start: f.get('s') || 0 }, ...lib]);
                                 e.target.reset();
                             }}>
-                                <h3 style={{marginTop:0}}>Add Training Video</h3>
+                                <h3>Add New Workout</h3>
                                 <input name="u" placeholder="YouTube URL" required />
-                                <input name="t" placeholder="Title (e.g. HIIT Cardio)" required />
+                                <input name="t" placeholder="Title" required />
                                 <div style={{display:'flex', gap:'10px'}}>
                                     <input name="d" type="number" placeholder="Mins" required />
                                     <input name="s" type="number" placeholder="Start at (Secs)" />
                                 </div>
                                 <button type="submit">Add to Library</button>
                             </form>
-
-                            {lib.map(v => (
-                                <div key={v.id} className="card" style={{display:'flex', justifyContent:'space-between', padding:'12px 20px', alignItems:'center'}}>
-                                    <div>
-                                        <strong>{v.title}</strong><br/>
-                                        <small style={{color:'var(--dim)'}}>{v.dur}m (Start: {v.start}s)</small>
+                            
+                            <div className="card">
+                                {lib.map(v => (
+                                    <div key={v.id} className="lib-row">
+                                        <div className="lib-info">
+                                            <div className="thumb-box">
+                                                <img src={`https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`} alt="thumb" />
+                                            </div>
+                                            <div>
+                                                <div style={{fontWeight:'bold', fontSize:'14px'}}>{v.title}</div>
+                                                <div style={{fontSize:'12px', color:'var(--dim)'}}>{v.dur}m | Start: {v.start}s</div>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => setLib(lib.filter(x => x.id !== v.id))} style={{background:'var(--danger)', width:'35px', padding:'5px'}}>✕</button>
                                     </div>
-                                    <button onClick={() => setLib(lib.filter(x => x.id !== v.id))} style={{background:'var(--danger)', width:'40px', padding:'8px'}}>✕</button>
-                                </div>
-                            ))}
-                            <button className="btn-sec" onClick={() => setView('home')}>Back to Dashboard</button>
+                                ))}
+                            </div>
+                            <button className="btn-sec" onClick={() => setView('home')}>Back</button>
                         </div>
                     )}
 
                     {view === 'workout' && workout.plan.length > 0 && (
                         <div style={{textAlign: 'center'}}>
                             <div className="video-container">
-                                <iframe 
-                                    src={`https://www.youtube.com/embed/${getYTID(workout.plan[workout.idx].url)}?autoplay=1&start=${workout.plan[workout.idx].start}&rel=0`} 
-                                    allow="autoplay; encrypted-media" 
-                                    allowFullScreen>
-                                </iframe>
+                                <iframe src={`https://www.youtube.com/embed/${getYTID(workout.plan[workout.idx].url)}?autoplay=1&start=${workout.plan[workout.idx].start}&rel=0`} allow="autoplay" allowFullScreen></iframe>
                             </div>
-                            <div style={{fontSize:'54px', fontWeight:'900', color:'var(--neon)', margin:'10px 0'}}>
+                            <div style={{fontSize:'54px', fontWeight:'900', color:'var(--neon)'}}>
                                 {Math.floor(workout.seconds / 60)}:{(workout.seconds % 60).toString().padStart(2, '0')}
                             </div>
-                            <h3 style={{margin:0}}>{workout.plan[workout.idx].title}</h3>
-                            <p style={{color:'var(--dim)'}}>Video {workout.idx + 1} of {workout.plan.length}</p>
-                            <button className="btn-sec" style={{color:'var(--danger)', marginTop:'20px'}} onClick={() => {if(confirm("Quit workout?")) setView('home')}}>Quit Session</button>
+                            <h3>{workout.plan[workout.idx].title}</h3>
+                            <button className="btn-sec" style={{color:'var(--danger)'}} onClick={() => {if(confirm("Quit?")) setView('home')}}>Quit Session</button>
                         </div>
                     )}
 
                     {selectedDay && (
                         <div className="modal-overlay" onClick={() => setSelectedDay(null)}>
-                            <div className="card" style={{width:'85%', maxWidth:'350px'}} onClick={e => e.stopPropagation()}>
-                                <h2 style={{color:'var(--neon)', marginTop:0}}>{selectedDay.date}</h2>
-                                <p style={{fontSize:'18px'}}>Progress: <strong>{selectedDay.mins} / 20 mins</strong></p>
-                                <hr style={{borderColor:'#333', margin:'15px 0'}} />
-                                <div style={{textAlign:'left', fontSize:'14px', maxHeight:'150px', overflowY:'auto', marginBottom:'20px'}}>
-                                    <strong style={{display:'block', marginBottom:'5px'}}>Workouts Logged:</strong>
-                                    {selectedDay.vids.map((v, i) => <div key={i} style={{padding:'4px 0', borderBottom:'1px solid #222'}}>• {v}</div>)}
+                            <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
+                                <h2>{selectedDay.date}</h2>
+                                <p>Progress: {selectedDay.mins} / 20 mins</p>
+                                <div style={{textAlign:'left', fontSize:'13px', maxHeight:'150px', overflowY:'auto'}}>
+                                    {selectedDay.vids.map((v, i) => <div key={i} style={{padding:'5px 0', borderBottom:'1px solid #333'}}>• {v}</div>)}
                                 </div>
-                                <button className="btn-sec" style={{color:'var(--danger)', marginBottom:'10px'}} onClick={() => {
-                                    if(confirm("Reset progress for this day?")){
-                                        const newHist = {...hist}; delete newHist[selectedDay.date];
-                                        setHist(newHist); setSelectedDay(null);
-                                    }
-                                }}>Reset Day</button>
+                                <button className="btn-sec" style={{color:'var(--danger)', marginTop:'15px'}} onClick={() => { if(confirm("Reset?")){ const n = {...hist}; delete n[selectedDay.date]; setHist(n); setSelectedDay(null); } }}>Reset Day</button>
                                 <button className="btn-sec" onClick={() => setSelectedDay(null)}>Close</button>
                             </div>
                         </div>
