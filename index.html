@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v63</title>
+    <title>Daily20 Pro | v64</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,24 +14,22 @@
         .container { max-width: 480px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
         .card { background: var(--card); padding: 16px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #282828; }
         
-        /* Header */
         .header-box { text-align: center; margin-bottom: 8px; }
         .app-title { color: var(--neon); margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -1px; }
         .v-tag { color: var(--dim); font-size: 9px; font-family: monospace; display: block; margin-top: -2px; }
 
-        /* Streak & Calendar Footer */
-        .streak-area { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #222; }
-        .streak-badge { color: var(--neon); font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
-
-        /* Buttons */
         .btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
         button { background: var(--neon); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; flex: 1; }
         .btn-sec { background: #2a2a2a; color: white; }
         svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
-        /* Library Thumbs (Standardized) */
+        /* Library List & Thumbs */
         .lib-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #222; }
         .list-thumb { width: 80px; height: 45px; border-radius: 6px; object-fit: cover; background: #000; flex-shrink: 0; }
+
+        /* Add Video Form */
+        .add-form { display: flex; flex-direction: column; gap: 8px; }
+        .inline-inputs { display: flex; gap: 8px; }
 
         /* Carousel */
         .carousel { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0 15px 0; scrollbar-width: none; }
@@ -39,22 +37,21 @@
         .thumb-wrap { position: relative; width: 110px; height: 62px; border-radius: 10px; overflow: hidden; border: 2.5px solid transparent; background: #000; flex-shrink: 0; }
         .selected .thumb-wrap { border-color: var(--neon); }
 
-        /* Workout Player (Full Frame Optimization) */
+        /* Player UI */
         .workout-ui { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; }
-        .player-box { width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
-        .player-box iframe { width: 100%; height: 100%; max-height: 100%; border: none; }
-        .controls-box { background: var(--bg); padding: 20px; border-top: 2px solid #222; text-align: center; }
+        .player-box { width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; }
+        .player-box iframe { width: 100%; height: 100%; border: none; }
+        .controls-box { background: var(--bg); padding: 20px; border-top: 1px solid #333; text-align: center; padding-bottom: 30px; }
         .timer-big { font-size: 64px; font-weight: 900; color: var(--neon); font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 10px; }
 
-        /* Calendar Grid */
+        /* Cal & Streak */
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 8px; }
         .cal-day { aspect-ratio: 1; border-radius: 8px; background: #1f1f1f; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .cal-day.done { background: var(--neon); color: #000; font-weight: bold; }
-        
-        /* Modals */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 15px; }
-        .modal { width: 100%; max-width: 400px; background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #333; }
-        input, textarea, select { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; margin-bottom: 10px; }
+        .streak-area { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px; color: var(--neon); font-weight: 800; font-size: 14px; }
+
+        input, select, textarea { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box; }
+        label { font-size: 10px; font-weight: 800; color: var(--neon); text-transform: uppercase; margin-bottom: 4px; display: block; }
     </style>
 </head>
 <body>
@@ -62,11 +59,6 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
-
-        const Icons = {
-            Back: () => <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
-            Fire: () => <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2c0 0-3.5 3.5-3.5 7.5s3.5 5.5 3.5 5.5s3.5-1.5 3.5-5.5S12 2 12 2z"/><path d="M12 22c3.866 0 7-3.134 7-7c0-1.5-.5-2.5-1.5-3.5c0 3-2 4.5-3.5 5.5s-2 2.5-2 5s.5 4 2 5z" opacity="0.5"/></svg>
-        };
 
         const getLocalDateKey = (d = new Date()) => {
             const offset = d.getTimezoneOffset() * 60000;
@@ -80,7 +72,6 @@
             const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_goal')) || 20);
             
             const [selectedId, setSelectedId] = useState(null);
-            const [offlineLog, setOfflineLog] = useState(false);
             const [inspecting, setInspecting] = useState(null);
             const [workout, setWorkout] = useState({ plan: [], idx: 0, secondsLeft: 0 });
             const [isPlaying, setIsPlaying] = useState(false);
@@ -129,19 +120,28 @@
                 return { type: 'web', id: null, thumb: 'https://placehold.co/100x60/222/ff9900?text=VIDEO' };
             };
 
+            const handleAdd = (e) => {
+                e.preventDefault();
+                const f = new FormData(e.target);
+                const dur = f.get('d').split(':');
+                const secs = (parseInt(dur[0]) * 60) + (parseInt(dur[1]) || 0);
+                setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), durSec: secs }, ...lib]);
+                e.target.reset();
+            };
+
             return (
                 <div className="container">
                     <header className="header-box">
                         <h1 className="app-title">DAILY20</h1>
-                        <span className="v-tag">VERSION 63.0</span>
+                        <span className="v-tag">VERSION 64.0</span>
                     </header>
 
                     {view === 'home' && (
                         <>
                             <div className="card">
-                                <label style={{fontSize:10, color:'var(--neon)', fontWeight:800}}>DAILY GOAL</label>
+                                <label>Daily Goal (Mins)</label>
                                 <select value={goal} onChange={e => setGoal(parseInt(e.target.value))}>
-                                    {[10, 20, 30, 45, 60].map(g => <option key={g} value={g}>{g} Minutes</option>)}
+                                    {[10, 20, 30, 45, 60].map(g => <option key={g} value={g}>{g}</option>)}
                                 </select>
                                 
                                 <div className="carousel">
@@ -149,7 +149,7 @@
                                         <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id === selectedId ? null : v.id)}>
                                             <div className="thumb-wrap">
                                                 <img src={getMeta(v.url).thumb} style={{width:'100%', height:'100%', objectFit:'cover'}} />
-                                                <div className="dur-badge">{Math.floor(v.durSec/60)}m</div>
+                                                <div className="dur-badge" style={{position:'absolute', bottom:2, right:2, fontSize:8, background:'rgba(0,0,0,0.7)', padding:'1px 3px'}}>{Math.floor(v.durSec/60)}m</div>
                                             </div>
                                         </div>
                                     ))}
@@ -164,7 +164,7 @@
                                 }}>Start Workout</button>
 
                                 <div className="btn-row" style={{marginTop:12}}>
-                                    <button className="btn-sec" onClick={() => setOfflineLog(true)}>Offline Training</button>
+                                    <button className="btn-sec" onClick={() => setInspecting({key: todayKey, date: 'Today', m: todayMins, txt: ''})}>Log Manual</button>
                                     <button className="btn-sec" onClick={() => setView('lib')}>Library</button>
                                 </div>
                             </div>
@@ -183,9 +183,7 @@
                                         );
                                     })}
                                 </div>
-                                <div className="streak-area">
-                                    {streak > 0 && <div className="streak-badge"><Icons.Fire /> {streak} Day Streak</div>}
-                                </div>
+                                {streak > 0 && <div className="streak-area">🔥 {streak} Day Streak</div>}
                             </div>
                         </>
                     )}
@@ -193,10 +191,20 @@
                     {view === 'lib' && (
                         <div style={{height:'100%', overflowY:'auto'}}>
                             <div className="btn-row">
-                                <button className="btn-sec btn-icon" onClick={() => setView('home')}><Icons.Back /></button>
-                                <button className="btn-sec">Export</button>
-                                <button className="btn-sec">Import</button>
+                                <button className="btn-sec" style={{width:50, flex:'none'}} onClick={() => setView('home')}>←</button>
+                                <div style={{flex:1, textAlign:'center', lineHeight:'44px', fontWeight:800}}>LIBRARY</div>
                             </div>
+                            
+                            <form className="card add-form" onSubmit={handleAdd}>
+                                <label>Add New Video</label>
+                                <input name="t" placeholder="Title (e.g. Morning Yoga)" required />
+                                <input name="u" placeholder="YouTube or Instagram URL" required />
+                                <div className="inline-inputs">
+                                    <input name="d" placeholder="Duration (m:ss)" required />
+                                    <button type="submit" style={{flex:1.5}}>Add Video</button>
+                                </div>
+                            </form>
+
                             <div className="card">
                                 {lib.map(v => (
                                     <div key={v.id} className="lib-item">
@@ -213,7 +221,7 @@
                         <div className="workout-ui">
                             <div className="player-box">
                                 {getMeta(workout.plan[workout.idx].url).type === 'yt' ? (
-                                    <iframe src={`https://www.youtube.com/embed/${getMeta(workout.plan[workout.idx].url).id}?autoplay=1&controls=1&modestbranding=1&rel=0`} allow="autoplay"></iframe>
+                                    <iframe src={`https://www.youtube.com/embed/${getMeta(workout.plan[workout.idx].url).id}?autoplay=1&controls=1`} allow="autoplay"></iframe>
                                 ) : (
                                     <iframe src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowFullScreen></iframe>
                                 )}
@@ -224,7 +232,7 @@
                                 </div>
                                 <h3 style={{margin:'0 0 15px 0', fontSize:18}}>{workout.plan[workout.idx].title}</h3>
                                 <div className="btn-row">
-                                    <button onClick={() => setPaused(!paused)}>{paused ? '▶ Resume' : '⏸ Pause'}</button>
+                                    <button onClick={() => setPaused(!paused)}>{paused ? '▶' : '⏸'}</button>
                                     <button className="btn-sec" onClick={() => {
                                         if (workout.idx + 1 < workout.plan.length) {
                                             const nxt = workout.idx + 1;
@@ -237,34 +245,15 @@
                         </div>
                     )}
 
-                    {offlineLog && (
-                        <div className="overlay" onClick={() => setOfflineLog(false)}>
-                            <div className="modal" onClick={e => e.stopPropagation()}>
-                                <h3 style={{marginTop:0}}>Manual Entry</h3>
-                                <form onSubmit={e => {
-                                    e.preventDefault();
-                                    const f = new FormData(e.target);
-                                    const m = parseInt(f.get('m'));
-                                    setHist(prev => ({...prev, [todayKey]: { totalMins: (prev[todayKey]?.totalMins || 0) + m, videos: (prev[todayKey]?.videos || "") + "Offline||" }}));
-                                    setOfflineLog(false);
-                                }}>
-                                    <label>Minutes Trained</label>
-                                    <input type="number" name="m" required />
-                                    <button type="submit">Log Minutes</button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
                     {inspecting && (
                         <div className="overlay" onClick={() => setInspecting(null)}>
-                            <div className="modal" onClick={e => e.stopPropagation()}>
-                                <h3 style={{marginTop:0}}>{inspecting.date}</h3>
-                                <label>Total Minutes</label>
+                            <div className="card" style={{width:'90%', maxWidth:350}} onClick={e => e.stopPropagation()}>
+                                <h3>{inspecting.date}</h3>
+                                <label>Training Minutes</label>
                                 <input type="number" value={inspecting.m} onChange={e => setInspecting({...inspecting, m: parseInt(e.target.value)||0})} />
-                                <label>Activity Text</label>
+                                <label>Notes</label>
                                 <textarea rows="3" value={inspecting.txt} onChange={e => setInspecting({...inspecting, txt: e.target.value})} />
-                                <div className="btn-row">
+                                <div className="btn-row" style={{marginTop:10}}>
                                     <button onClick={() => {
                                         setHist({...hist, [inspecting.key]: {totalMins: inspecting.m, videos: inspecting.txt}});
                                         setInspecting(null);
