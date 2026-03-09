@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v52</title>
+    <title>Daily20 Pro | v53</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,11 +14,11 @@
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
         .card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid #333; }
         label { display: block; font-size: 11px; color: var(--neon); margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
-        input, textarea { background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; margin-bottom: 12px; }
+        input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; margin-bottom: 12px; }
         button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
+        button:disabled { opacity: 0.3; }
         .btn-sec { background: #333; color: white; margin-top: 8px; }
-        .btn-icon { padding: 10px; width: 40px; font-size: 16px; border-radius: 8px; }
+        .btn-icon { padding: 10px; width: 40px; border-radius: 8px; }
         .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scrollbar-width: none; }
         .carousel-item { flex: 0 0 115px; text-align: center; cursor: pointer; }
         .thumb-wrap { position: relative; width: 115px; height: 65px; border-radius: 10px; overflow: hidden; border: 2px solid transparent; }
@@ -26,7 +26,7 @@
         .dur-badge { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.85); color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; }
         .carousel-item.selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 15px rgba(255, 153, 0, 0.4); }
         .progress-bg { width: 100%; height: 10px; background: #2a2a2a; border-radius: 5px; margin-top: 12px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--neon); transition: width 0.3s linear; }
+        .progress-fill { height: 100%; background: var(--neon); transition: width 0.8s ease; }
         .progress-fill.full { background: var(--success); animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         .streak-badge { background: linear-gradient(45deg, #ff4500, #ff9900); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 900; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; }
@@ -52,19 +52,18 @@
 
         const App = () => {
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_v52_lib')) || []);
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_v52_hist')) || {});
-            const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_v52_goal')) || 20);
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_v53_lib')) || []);
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_v53_hist')) || {});
+            const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_v53_goal')) || 20);
             const [selectedId, setSelectedId] = useState(null);
             const [showOfflineLog, setShowOfflineLog] = useState(false);
             const [celebrate, setCelebrate] = useState(false);
             const [inspectingDate, setInspectingDate] = useState(null);
             
-            const [workout, setWorkout] = useState({ plan: [], idx: 0, videoSecondsLeft: 0 });
+            const [workout, setWorkout] = useState({ plan: [], idx: 0, secondsLeft: 0 });
             const [isPlaying, setIsPlaying] = useState(false);
             const [paused, setPaused] = useState(false);
             const playerRef = useRef(null);
-            const activeSecondsRef = useRef(0); // Tracks real seconds spent training
 
             const todayKey = getLocalDateKey();
             const todayMins = hist[todayKey]?.totalMins || 0;
@@ -82,78 +81,49 @@
             }, [hist, goal, todayKey]);
 
             useEffect(() => {
-                localStorage.setItem('d20_v52_lib', JSON.stringify(lib));
-                localStorage.setItem('d20_v52_hist', JSON.stringify(hist));
-                localStorage.setItem('d20_v52_goal', goal.toString());
+                localStorage.setItem('d20_v53_lib', JSON.stringify(lib));
+                localStorage.setItem('d20_v53_hist', JSON.stringify(hist));
+                localStorage.setItem('d20_v53_goal', goal.toString());
             }, [lib, hist, goal]);
 
-            const logActivity = (seconds, title) => {
-                if (seconds <= 0) return;
+            const logMinutes = (mins, title) => {
                 const tk = getLocalDateKey();
                 setHist(prev => {
                     const ex = prev[tk] || { totalMins: 0, videos: "" };
-                    const addedMins = seconds / 60;
-                    const newTotal = ex.totalMins + addedMins;
-                    
-                    // Check for confetti trigger
+                    const newTotal = ex.totalMins + mins;
                     if (newTotal >= goal && ex.totalMins < goal) setCelebrate(true);
-
-                    // Avoid duplicate titles if title already exists in string for today
-                    const videoLog = ex.videos.includes(title) ? ex.videos : (ex.videos + (ex.videos ? ", " : "") + title);
-                    
                     return { ...prev, [tk]: {
-                        totalMins: Math.round(newTotal * 100) / 100, // Keep precision
-                        videos: videoLog
+                        totalMins: newTotal,
+                        videos: ex.videos + (ex.videos ? ", " : "") + title
                     }};
                 });
             };
 
             const handleNext = () => {
-                // Log what we have so far
-                logActivity(activeSecondsRef.current, workout.plan[workout.idx].title);
-                activeSecondsRef.current = 0; // Reset for next video
+                const video = workout.plan[workout.idx];
+                const mins = Math.ceil((video.durSec - (video.startSec || 0)) / 60);
+                
+                // FIXED: Log IMMEDIATELY before state change
+                logMinutes(mins, video.title);
 
                 if (workout.idx + 1 < workout.plan.length) {
                     const nxt = workout.idx + 1;
-                    setWorkout(w => ({ ...w, idx: nxt, videoSecondsLeft: w.plan[nxt].durSec - (w.plan[nxt].startSec || 0) }));
+                    setWorkout(w => ({ ...w, idx: nxt, secondsLeft: w.plan[nxt].durSec - (w.plan[nxt].startSec || 0) }));
                 } else {
                     setView('home');
                     if (playerRef.current) playerRef.current.destroy();
                 }
             };
 
-            // THE REAL-TIME ENGINE
             useEffect(() => {
                 let t;
-                if (view === 'workout' && isPlaying && !paused) {
-                    t = setInterval(() => {
-                        activeSecondsRef.current += 1; // Increment real training time
-                        
-                        setWorkout(w => {
-                            if (w.videoSecondsLeft <= 1) {
-                                // Video naturally ended
-                                setTimeout(handleNext, 0);
-                                return w;
-                            }
-                            return { ...w, videoSecondsLeft: w.videoSecondsLeft - 1 };
-                        });
-
-                        // Sync with UI every 5 seconds to show progress updates live
-                        if (activeSecondsRef.current % 5 === 0) {
-                            logActivity(5, workout.plan[workout.idx].title);
-                            activeSecondsRef.current = 0;
-                        }
-                    }, 1000);
+                if (view === 'workout' && isPlaying && !paused && workout.secondsLeft > 0) {
+                    t = setInterval(() => setWorkout(w => ({ ...w, secondsLeft: w.secondsLeft - 1 })), 1000);
+                } else if (view === 'workout' && workout.secondsLeft <= 0 && isPlaying) {
+                    handleNext();
                 }
-                return () => {
-                    clearInterval(t);
-                    // Ensure remaining unsynced seconds are logged when pausing/exiting
-                    if (view === 'workout') {
-                        logActivity(activeSecondsRef.current, workout.plan[workout.idx]?.title);
-                        activeSecondsRef.current = 0;
-                    }
-                };
-            }, [view, isPlaying, paused, workout.idx]);
+                return () => clearInterval(t);
+            }, [view, isPlaying, paused, workout.secondsLeft]);
 
             useEffect(() => {
                 if (view === 'workout' && workout.plan[workout.idx]) {
@@ -166,7 +136,7 @@
                             playerVars: { autoplay: 1, start: v.startSec || 0, controls: 1 },
                             events: { onStateChange: (e) => setIsPlaying(e.data === 1) }
                         });
-                    } else { setIsPlaying(true); } // Handle non-YT fallback
+                    } else { setIsPlaying(true); }
                 }
             }, [view, workout.idx]);
 
@@ -196,7 +166,7 @@
                                     let pool = [...lib].sort(() => 0.5 - Math.random());
                                     if (selectedId) pool = [lib.find(x => x.id === selectedId), ...pool.filter(x => x.id !== selectedId)];
                                     const plan = pool.slice(0, 4);
-                                    setWorkout({ plan, idx: 0, videoSecondsLeft: plan[0].durSec - (plan[0].startSec || 0) });
+                                    setWorkout({ plan, idx: 0, secondsLeft: plan[0].durSec - (plan[0].startSec || 0) });
                                     setView('workout');
                                 }}>Start Training</button>
                                 <div className="progress-bg"><div className={`progress-fill ${progressPct >= 100 ? 'full' : ''}`} style={{width: `${progressPct}%`}}></div></div>
@@ -208,12 +178,12 @@
 
                             <div className="card" style={{textAlign:'center'}}>
                                 {streak > 0 && <div className="streak-badge">🔥 {streak} Day Streak</div>}
-                                <div style={{fontSize:38, fontWeight:900}}><span style={{color: progressPct >= 100 ? 'var(--success)' : 'var(--neon)'}}>{Math.floor(todayMins)}</span> / {goal}m</div>
+                                <div style={{fontSize:38, fontWeight:900}}><span style={{color: progressPct >= 100 ? 'var(--success)' : 'var(--neon)'}}>{todayMins}</span> / {goal}m</div>
                                 <div className="cal-grid">
                                     {Array.from({length:28}).map((_, i) => {
                                         const d = new Date(); d.setDate(d.getDate() - (27 - i));
                                         const k = getLocalDateKey(d);
-                                        return <div key={k} className={`cal-day ${(hist[k]?.totalMins || 0) >= goal ? 'done' : ''}`} onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>{d.getDate()}<small style={{fontSize:7}}>{Math.floor(hist[k]?.totalMins || 0)}m</small></div>
+                                        return <div key={k} className={`cal-day ${(hist[k]?.totalMins || 0) >= goal ? 'done' : ''}`} onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>{d.getDate()}<small style={{fontSize:7}}>{hist[k]?.totalMins || 0}m</small></div>
                                     })}
                                 </div>
                             </div>
@@ -238,7 +208,7 @@
                                 {lib.map(v => (
                                     <div key={v.id} style={{display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid #333'}}>
                                         <div>{v.title}</div>
-                                        <button className="btn-icon" style={{background:'var(--danger)', height:30, padding:0, width:30}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
+                                        <button className="btn-icon" style={{background:'var(--danger)', color:'white'}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
                                     </div>
                                 ))}
                             </div>
@@ -249,13 +219,12 @@
                         <main>
                             <div className="player-frame"><div id="yt-player"></div></div>
                             <div className="card" style={{textAlign:'center'}}>
-                                <div style={{fontSize:54, fontWeight:900}}>{Math.floor(workout.videoSecondsLeft/60)}:{(workout.videoSecondsLeft%60).toString().padStart(2,'0')}</div>
+                                <div style={{fontSize:54, fontWeight:900}}>{Math.floor(workout.secondsLeft/60)}:{(workout.secondsLeft%60).toString().padStart(2,'0')}</div>
                                 <h3>{workout.plan[workout.idx].title}</h3>
                                 <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
                                     <button onClick={() => setPaused(!paused)}>{paused ? 'Resume' : 'Pause'}</button>
                                     <button className="btn-sec" onClick={handleNext}>Skip</button>
                                 </div>
-                                <button className="btn-sec" onClick={() => setView('home')} style={{marginTop:10}}>Exit Workout</button>
                             </div>
                         </main>
                     )}
@@ -266,7 +235,7 @@
                                 <h3>Log Activity</h3>
                                 <form onSubmit={e => {
                                     e.preventDefault(); const f = new FormData(e.target);
-                                    logActivity(parseInt(f.get('m')) * 60, f.get('a'));
+                                    logMinutes(parseInt(f.get('m')), f.get('a'));
                                     setShowOfflineLog(false);
                                 }}>
                                     <input name="a" required placeholder="Activity" /><input type="number" name="m" required placeholder="Minutes" />
@@ -280,8 +249,8 @@
                         <div className="overlay" onClick={() => setInspectingDate(null)}>
                             <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
                                 <h3>{inspectingDate.full}</h3>
-                                <div style={{fontSize:24, fontWeight:900}}>{Math.floor(hist[inspectingDate.key]?.totalMins || 0)}m</div>
-                                <p style={{fontSize:12, color:'var(--dim)'}}>{hist[inspectingDate.key]?.videos || "No training data"}</p>
+                                <div style={{fontSize:24, fontWeight:900}}>{hist[inspectingDate.key]?.totalMins || 0}m</div>
+                                <p style={{fontSize:12, color:'var(--dim)'}}>{hist[inspectingDate.key]?.videos || "No data"}</p>
                                 <button className="btn-sec" onClick={() => setInspectingDate(null)}>Close</button>
                             </div>
                         </div>
