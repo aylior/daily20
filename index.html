@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v35</title>
+    <title>Daily20 Pro | v36</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -23,7 +23,8 @@
 
         /* Icon Buttons */
         .icon-btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .icon-btn { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; cursor: pointer; }
+        /* Added text-transform: none to ensure 'Import' doesn't auto-capitalize */
+        .icon-btn { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; cursor: pointer; text-transform: none; }
         .icon-btn svg { width: 18px; height: 18px; stroke: var(--neon); fill: none; stroke-width: 2.5; margin-right: 8px; }
 
         /* Stats & Calendar */
@@ -66,9 +67,9 @@
 
         const App = () => {
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_v35_lib')) || []);
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_v35_hist')) || {});
-            const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_v35_goal')) || 20);
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_v36_lib')) || []);
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_v36_hist')) || {});
+            const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_v36_goal')) || 20);
             
             const [editingId, setEditingId] = useState(null);
             const [inspectingDate, setInspectingDate] = useState(null);
@@ -85,9 +86,9 @@
             const todayMins = hist[todayKey]?.totalMins || 0;
 
             useEffect(() => {
-                localStorage.setItem('d20_v35_lib', JSON.stringify(lib));
-                localStorage.setItem('d20_v35_hist', JSON.stringify(hist));
-                localStorage.setItem('d20_v35_goal', goal);
+                localStorage.setItem('d20_v36_lib', JSON.stringify(lib));
+                localStorage.setItem('d20_v36_hist', JSON.stringify(hist));
+                localStorage.setItem('d20_v36_goal', goal);
             }, [lib, hist, goal]);
 
             // Time Helpers
@@ -131,7 +132,6 @@
             const cleanup = () => { if (playerRef.current?.destroy) playerRef.current.destroy(); playerRef.current = null; setIsPlaying(false); };
             
             const creditVideo = (vid) => {
-                // Calculate credited minutes based on total planned seconds, not remaining seconds
                 const mins = Math.max(1, Math.ceil(vid.durSec / 60));
                 setHist(prev => {
                     const day = prev[todayKey] || { videos: "", totalMins: 0 };
@@ -229,7 +229,7 @@
                                 <div className="icon-btn" onClick={() => setView('home')}><Icons.Back /> Back</div>
                                 <div className="icon-btn" onClick={() => {
                                     const blob = new Blob([JSON.stringify({lib, hist, goal})], {type: 'application/json'});
-                                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'daily20_v35.json'; a.click();
+                                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'daily20_v36.json'; a.click();
                                 }}><Icons.Export /> Export</div>
                                 <label className="icon-btn">
                                     <Icons.Import /> Import
@@ -269,6 +269,7 @@
                                                 <small style={{color:'var(--dim)'}}>{fromSecs(v.durSec)}</small>
                                             </div>
                                             <button style={{width:40, padding:5}} onClick={() => setEditingId(editingId === v.id ? null : v.id)}>✎</button>
+                                            <button style={{width:40, padding:5, background:'var(--danger)'}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
                                         </div>
                                         {editingId === v.id && (
                                             <div className="edit-box">
@@ -281,7 +282,7 @@
                                                 <label>Start Timestamp (mm:ss)</label>
                                                 <input defaultValue={fromSecs(v.startSec || 0)} onBlur={e => setLib(lib.map(x => x.id === v.id ? {...x, startSec: toSecs(e.target.value)} : x))} />
                                                 
-                                                <button className="btn-sec" style={{background:'var(--danger)', marginTop:10}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>Delete Video</button>
+                                                <button className="btn-sec" style={{background:'var(--success)', marginTop:10, textTransform:'none'}} onClick={() => setEditingId(null)}>Save changes</button>
                                             </div>
                                         )}
                                     </div>
@@ -319,7 +320,7 @@
                                         <div key={i} style={{padding:'8px 0', borderBottom:'1px solid #333'}}>{v}</div>
                                     )) : <div style={{color:'var(--dim)'}}>No training recorded.</div>}
                                 </div>
-                                <button className="btn-sec" onClick={() => setInspectingDate(null)} style={{marginTop:15}}>Close</button>
+                                <button className="btn-sec" onClick={() => setInspectingDate(null)} style={{marginTop:15, textTransform:'none'}}>Close</button>
                             </div>
                         </div>
                     )}
