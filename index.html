@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v39</title>
+    <title>Daily20 Pro | v40</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -19,96 +19,88 @@
         button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-sec { background: #333; color: white; margin-top: 8px; }
 
-        /* Icon Buttons */
-        .icon-btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .icon-btn { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; cursor: pointer; text-transform: none; }
-        .icon-btn svg { width: 18px; height: 18px; stroke: var(--neon); fill: none; stroke-width: 2.5; margin-right: 8px; }
-
-        /* Calendar */
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; }
-        .cal-day { aspect-ratio: 1; border-radius: 6px; background: #2a2a2a; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .cal-day { aspect-ratio: 1; border-radius: 6px; background: #2a2a2a; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .cal-day.done { background: var(--neon); color: black; font-weight: bold; }
-        .cal-day.today { border: 1.5px solid var(--neon); }
+        .cal-day.today { border: 2px solid var(--neon); }
 
-        /* Media List */
-        .lib-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #333; }
-        .lib-thumb { width: 50px; height: 30px; border-radius: 4px; object-fit: cover; }
-        
+        .player-frame { width: 100%; background: #000; border-radius: 16px; overflow: hidden; position: relative; border: 1px solid #333; margin-bottom: 12px; aspect-ratio: 16/9; }
+        .player-frame.insta { aspect-ratio: 1 / 1.2; }
+        .player-frame iframe, #yt-player { width: 100% !important; height: 100% !important; position: absolute; top: 0; left: 0; }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .summary-card { width: 90%; text-align: center; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
         .carousel { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0; margin-bottom: 15px; scrollbar-width: none; }
         .carousel-item { flex: 0 0 100px; text-align: center; cursor: pointer; }
         .carousel-thumb { width: 100px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid transparent; }
-        .selected .carousel-thumb { border-color: var(--neon); transform: scale(1.05); }
-
-        /* Responsive Player Containers */
-        .player-frame { width: 100%; background: #000; border-radius: 16px; overflow: hidden; position: relative; border: 1px solid #333; margin-bottom: 12px; }
-        .ratio-16-9 { aspect-ratio: 16 / 9; }
-        .ratio-insta { aspect-ratio: 1 / 1.2; max-height: 60vh; }
-        .player-frame iframe, .player-frame div { width: 100% !important; height: 100% !important; position: absolute; top: 0; left: 0; }
-
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .selected .carousel-thumb { border-color: var(--neon); }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        const Icons = {
-            Back: () => <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
-            Export: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4m12-7-5-5-5 5m5-5v12"/></svg>,
-            Import: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5m-5 5V3"/></svg>
-        };
+        const { useState, useEffect, useRef, useMemo } = React;
 
         const App = () => {
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_v39_lib')) || []);
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_v39_hist')) || {});
-            const [goal, setGoal] = useState(20);
+            // Unified storage key to prevent data loss between versions
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_core_lib')) || []);
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_core_hist')) || {});
+            const [goal] = useState(20);
             
-            const [editingId, setEditingId] = useState(null);
             const [inspectingDate, setInspectingDate] = useState(null);
             const [isEditingHist, setIsEditingHist] = useState(false);
-            const [selectedId, setSelectedId] = useState(null);
+            const [showSummary, setShowSummary] = useState(null); // { mins: X, vids: Y }
             
-            const [workout, setWorkout] = useState({ plan: [], idx: 0, seconds: 0 });
+            const [workout, setWorkout] = useState({ plan: [], idx: 0, seconds: 0, sessionMins: 0 });
             const [isPlaying, setIsPlaying] = useState(false);
             const [paused, setPaused] = useState(false);
             const playerRef = useRef(null);
 
+            const todayKey = useMemo(() => new Date().toISOString().split('T')[0], []);
+
             useEffect(() => {
-                localStorage.setItem('d20_v39_lib', JSON.stringify(lib));
-                localStorage.setItem('d20_v39_hist', JSON.stringify(hist));
+                localStorage.setItem('d20_core_lib', JSON.stringify(lib));
+                localStorage.setItem('d20_core_hist', JSON.stringify(hist));
             }, [lib, hist]);
 
+            const fromSecs = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
             const toSecs = (str) => {
                 if (!str || !String(str).includes(':')) return parseInt(str) || 0;
                 const [m, s] = str.split(':');
                 return (parseInt(m) * 60) + (parseInt(s) || 0);
             };
-            const fromSecs = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
 
             const getYTID = (u) => u?.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/)?.[1];
             const isInsta = (u) => u?.includes('instagram.com');
-            const getThumb = (v) => isInsta(v.url) ? 'https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg' : `https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`;
 
-            const handleSkip = () => {
-                const finishedVid = workout.plan[workout.idx];
-                const today = new Date().toISOString().split('T')[0];
-                
+            const logProgress = (video) => {
+                const minsWon = Math.ceil((video.durSec - video.startSec) / 60);
                 setHist(prev => {
-                    const day = prev[today] || { totalMins: 0, videos: "" };
-                    return { ...prev, [today]: { 
-                        totalMins: day.totalMins + Math.ceil((finishedVid.durSec - finishedVid.startSec)/60),
-                        videos: day.videos + (day.videos ? ", " : "") + finishedVid.title
-                    }};
+                    const existing = prev[todayKey] || { totalMins: 0, videos: "" };
+                    return {
+                        ...prev,
+                        [todayKey]: {
+                            totalMins: existing.totalMins + minsWon,
+                            videos: existing.videos + (existing.videos ? ", " : "") + video.title
+                        }
+                    };
                 });
+                setWorkout(w => ({ ...w, sessionMins: w.sessionMins + minsWon }));
+            };
 
+            const handleNext = () => {
+                logProgress(workout.plan[workout.idx]);
                 if (workout.idx + 1 < workout.plan.length) {
-                    const next = workout.idx + 1;
-                    setWorkout({ ...workout, idx: next, seconds: workout.plan[next].durSec - (workout.plan[next].startSec || 0) });
+                    const nxt = workout.idx + 1;
+                    setWorkout(w => ({ ...w, idx: nxt, seconds: w.plan[nxt].durSec - (w.plan[nxt].startSec || 0) }));
                 } else {
-                    setView('home'); alert("Workout Complete!");
+                    const finalMins = workout.sessionMins + Math.ceil((workout.plan[workout.idx].durSec - workout.plan[workout.idx].startSec)/60);
+                    setShowSummary({ mins: finalMins });
+                    setView('home');
                 }
             };
 
@@ -117,7 +109,7 @@
                 if (view === 'workout' && isPlaying && !paused && workout.seconds > 0) {
                     t = setInterval(() => setWorkout(w => ({ ...w, seconds: w.seconds - 1 })), 1000);
                 } else if (view === 'workout' && workout.seconds <= 0 && isPlaying) {
-                    handleSkip();
+                    handleNext();
                 }
                 return () => clearInterval(t);
             }, [view, isPlaying, paused, workout.seconds]);
@@ -129,52 +121,53 @@
                         if (playerRef.current) playerRef.current.destroy();
                         playerRef.current = new window.YT.Player('yt-player', {
                             videoId: getYTID(v.url),
-                            playerVars: { autoplay: 1, start: v.startSec || 0, controls: 1, rel: 0 },
+                            playerVars: { autoplay: 1, start: v.startSec || 0, controls: 1 },
                             events: { onStateChange: (e) => setIsPlaying(e.data === 1) }
                         });
-                    } else {
-                        setIsPlaying(true); // Insta can't trigger state, we assume playing
-                    }
+                    } else { setIsPlaying(true); }
                 }
             }, [view, workout.idx]);
 
             return (
                 <div className="container">
                     <header style={{textAlign:'center', marginBottom:15}}>
-                        <h1 style={{color:'var(--neon)', margin:0}}>DAILY20</h1>
+                        <h1 style={{color:'var(--neon)', margin:0, letterSpacing:1.5}}>DAILY20</h1>
                     </header>
 
                     {view === 'home' && (
                         <main>
                             <div className="card">
                                 <div className="carousel">
-                                    {lib.map(v => (
-                                        <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id)}>
-                                            <img className="carousel-thumb" src={getThumb(v)} />
-                                            <div style={{fontSize:10, color:'white'}}>{v.title}</div>
+                                    {lib.length === 0 ? <p style={{color:'var(--dim)', width:'100%', textAlign:'center'}}>Library is empty</p> : 
+                                    lib.map(v => (
+                                        <div key={v.id} className="carousel-item">
+                                            <img className="carousel-thumb" src={isInsta(v.url) ? 'https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg' : `https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`} />
+                                            <div style={{fontSize:9, whiteSpace:'nowrap', overflow:'hidden'}}>{v.title}</div>
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={() => {
-                                    const pool = selectedId ? [lib.find(v => v.id === selectedId), ...lib.filter(v => v.id !== selectedId)] : [...lib].sort(() => 0.5 - Math.random());
-                                    const plan = pool.slice(0, 4);
-                                    if (plan.length === 0) return alert("Add videos first!");
-                                    setWorkout({ plan, idx: 0, seconds: plan[0].durSec - (plan[0].startSec || 0) });
+                                <button disabled={lib.length === 0} onClick={() => {
+                                    const plan = [...lib].sort(() => 0.5 - Math.random()).slice(0, 4);
+                                    setWorkout({ plan, idx: 0, seconds: plan[0].durSec - (plan[0].startSec || 0), sessionMins: 0 });
                                     setView('workout');
                                 }}>Start Training</button>
-                                <button className="btn-sec" onClick={() => setView('lib')}>Library & Settings</button>
+                                <button className="btn-sec" onClick={() => setView('lib')}>Library & Tools</button>
                             </div>
 
                             <div className="daily-stat">
-                                <div style={{fontSize:34, fontWeight:900}}>{hist[new Date().toISOString().split('T')[0]]?.totalMins || 0} / {goal}m</div>
+                                <div style={{fontSize:38, fontWeight:900, textAlign:'center'}}>
+                                    <span style={{color:'var(--neon)'}}>{hist[todayKey]?.totalMins || 0}</span> / {goal}m
+                                </div>
                                 <div className="cal-grid">
                                     {Array.from({length:28}).map((_, i) => {
                                         const d = new Date(); d.setDate(d.getDate() - (27 - i));
                                         const k = d.toISOString().split('T')[0];
+                                        const val = hist[k]?.totalMins || 0;
                                         return (
-                                            <div key={k} className={`cal-day ${ (hist[k]?.totalMins || 0) >= goal ? 'done' : ''}`} onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>
+                                            <div key={k} className={`cal-day ${val >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`} 
+                                                 onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>
                                                 {d.getDate()}
-                                                <small style={{fontSize:7}}>{hist[k]?.totalMins || 0}m</small>
+                                                <small style={{fontSize:7}}>{val}m</small>
                                             </div>
                                         );
                                     })}
@@ -185,21 +178,12 @@
 
                     {view === 'lib' && (
                         <main>
-                            <div className="icon-btn-group">
-                                <div className="icon-btn" onClick={() => setView('home')}><Icons.Back /> Back</div>
-                                <div className="icon-btn" onClick={() => {
-                                    const a = document.createElement('a');
-                                    a.href = URL.createObjectURL(new Blob([JSON.stringify({lib, hist, goal})], {type:'application/json'}));
-                                    a.download = 'daily20_v39.json'; a.click();
-                                }}><Icons.Export /> Export</div>
-                                <label className="icon-btn">
-                                    <Icons.Import /> Import
-                                    <input type="file" style={{display:'none'}} onChange={(e) => {
-                                        const r = new FileReader();
-                                        r.onload = (ev) => { const d = JSON.parse(ev.target.result); setLib(d.lib || []); setHist(d.hist || {}); };
-                                        r.readAsText(e.target.files[0]);
-                                    }} />
-                                </label>
+                            <div style={{display:'flex', gap:10, marginBottom:15}}>
+                                <button className="btn-sec" style={{flex:1}} onClick={() => setView('home')}>Back</button>
+                                <button className="btn-sec" style={{flex:1}} onClick={() => {
+                                    const blob = new Blob([JSON.stringify({lib, hist})], {type:'application/json'});
+                                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='daily20_v40.json'; a.click();
+                                }}>Export</button>
                             </div>
 
                             <form className="card" onSubmit={e => {
@@ -207,38 +191,23 @@
                                 setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), durSec: toSecs(f.get('d')), startSec: toSecs(f.get('s')) }, ...lib]);
                                 e.target.reset();
                             }}>
-                                <label>Title</label><input name="t" required />
+                                <label>Video Title</label><input name="t" required />
                                 <label>URL</label><input name="u" required />
                                 <div style={{display:'flex', gap:10}}>
-                                    <div style={{flex:1}}><label>End (mm:ss)</label><input name="d" required /></div>
-                                    <div style={{flex:1}}><label>Start (mm:ss)</label><input name="s" /></div>
+                                    <div style={{flex:1}}><label>End (m:s)</label><input name="d" required placeholder="10:00"/></div>
+                                    <div style={{flex:1}}><label>Start (m:s)</label><input name="s" placeholder="0:00"/></div>
                                 </div>
-                                <button type="submit">Add Video</button>
+                                <button type="submit">Add to Library</button>
                             </form>
 
                             <div className="card">
                                 {lib.map(v => (
-                                    <div key={v.id}>
-                                        <div className="lib-item">
-                                            <img className="lib-thumb" src={getThumb(v)} />
-                                            <div style={{flex:1}}>
-                                                <div style={{fontWeight:'bold'}}>{v.title}</div>
-                                                <small style={{color:'var(--dim)'}}>Net: {fromSecs(v.durSec - v.startSec)}</small>
-                                            </div>
-                                            <button style={{width:40, padding:5}} onClick={() => setEditingId(editingId === v.id ? null : v.id)}>✎</button>
-                                            <button style={{width:40, padding:5, background:'var(--danger)'}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
+                                    <div key={v.id} style={{display:'flex', alignItems:'center', gap:10, padding:'10px 0', borderBottom:'1px solid #333'}}>
+                                        <div style={{flex:1}}>
+                                            <div style={{fontWeight:'bold'}}>{v.title}</div>
+                                            <small style={{color:'var(--dim)'}}>Net: {fromSecs(v.durSec - v.startSec)}</small>
                                         </div>
-                                        {editingId === v.id && (
-                                            <div className="edit-box" style={{background:'#111', padding:10, borderRadius:8}}>
-                                                <label>Title</label><input defaultValue={v.title} id={`et-${v.id}`} />
-                                                <label>End (mm:ss)</label><input defaultValue={fromSecs(v.durSec)} id={`ed-${v.id}`} />
-                                                <label>Start (mm:ss)</label><input defaultValue={fromSecs(v.startSec)} id={`es-${v.id}`} />
-                                                <button onClick={() => {
-                                                    setLib(lib.map(x => x.id === v.id ? { ...x, title: document.getElementById(`et-${v.id}`).value, durSec: toSecs(document.getElementById(`ed-${v.id}`).value), startSec: toSecs(document.getElementById(`es-${v.id}`).value) } : x));
-                                                    setEditingId(null);
-                                                }}>Save changes</button>
-                                            </div>
-                                        )}
+                                        <button style={{width:40, background:'var(--danger)'}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
                                     </div>
                                 ))}
                             </div>
@@ -246,21 +215,21 @@
                     )}
 
                     {view === 'workout' && workout.plan[workout.idx] && (
-                        <main style={{textAlign:'center'}}>
-                            <div className={`player-frame ${isInsta(workout.plan[workout.idx].url) ? 'ratio-insta' : 'ratio-16-9'}`}>
+                        <main>
+                            <div className={`player-frame ${isInsta(workout.plan[workout.idx].url) ? 'insta' : ''}`}>
                                 {isInsta(workout.plan[workout.idx].url) ? 
-                                    <iframe src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowTransparency="true" frameBorder="0" scrolling="no" allowFullScreen></iframe> : 
+                                    <iframe src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowTransparency="true" frameBorder="0"></iframe> : 
                                     <div id="yt-player"></div>
                                 }
                             </div>
-                            <div className="card">
+                            <div className="card" style={{textAlign:'center'}}>
                                 <div style={{fontSize:54, fontWeight:900}}>{fromSecs(workout.seconds)}</div>
                                 <h3>{workout.plan[workout.idx].title}</h3>
                                 <button onClick={() => setPaused(!paused)} style={{background: paused ? 'var(--success)' : 'var(--warning)', marginBottom:10}}>
                                     {paused ? 'Resume' : 'Pause'}
                                 </button>
                                 <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
-                                    <button className="btn-sec" onClick={handleSkip}>Skip</button>
+                                    <button className="btn-sec" onClick={handleNext}>Skip</button>
                                     <button className="btn-sec" onClick={() => setView('home')}>Exit</button>
                                 </div>
                             </div>
@@ -268,26 +237,37 @@
                     )}
 
                     {inspectingDate && (
-                        <div className="overlay" onClick={() => setInspectingDate(null)}>
+                        <div className="overlay" onClick={() => {setInspectingDate(null); setIsEditingHist(false);}}>
                             <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
                                 <h3>{inspectingDate.full}</h3>
                                 {isEditingHist ? (
                                     <div>
-                                        <label>Minutes</label><input type="number" id="h-m" defaultValue={hist[inspectingDate.key]?.totalMins || 0} />
-                                        <label>Videos</label><textarea id="h-v" defaultValue={hist[inspectingDate.key]?.videos || ""} />
+                                        <label>Minutes</label><input type="number" id="edit-m" defaultValue={hist[inspectingDate.key]?.totalMins || 0} />
+                                        <label>History</label><textarea id="edit-v" defaultValue={hist[inspectingDate.key]?.videos || ""} />
                                         <button onClick={() => {
-                                            setHist({...hist, [inspectingDate.key]: { totalMins: parseInt(document.getElementById('h-m').value), videos: document.getElementById('h-v').value }});
+                                            setHist({...hist, [inspectingDate.key]: { totalMins: parseInt(document.getElementById('edit-m').value), videos: document.getElementById('edit-v').value }});
                                             setIsEditingHist(false);
-                                        }}>Save</button>
+                                        }}>Save Changes</button>
                                     </div>
                                 ) : (
                                     <div>
-                                        <p>{hist[inspectingDate.key]?.totalMins || 0} Minutes</p>
-                                        <p style={{fontSize:12, color:'var(--dim)'}}>{hist[inspectingDate.key]?.videos || "No logs."}</p>
-                                        <button className="btn-sec" onClick={() => setIsEditingHist(true)}>Edit</button>
+                                        <div style={{fontSize:24, fontWeight:900}}>{hist[inspectingDate.key]?.totalMins || 0}m Total</div>
+                                        <p style={{fontSize:12, color:'var(--dim)'}}>{hist[inspectingDate.key]?.videos || "No records"}</p>
+                                        <button className="btn-sec" onClick={() => setIsEditingHist(true)}>Edit History</button>
                                     </div>
                                 )}
                                 <button className="btn-sec" onClick={() => {setInspectingDate(null); setIsEditingHist(false);}}>Close</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showSummary && (
+                        <div className="overlay" onClick={() => setShowSummary(null)}>
+                            <div className="card summary-card">
+                                <h1 style={{color:'var(--neon)'}}>GREAT WORK!</h1>
+                                <div style={{fontSize:60, fontWeight:900}}>+{showSummary.mins}m</div>
+                                <p>Session complete. Your progress has been updated.</p>
+                                <button onClick={() => setShowSummary(null)}>Awesome</button>
                             </div>
                         </div>
                     )}
