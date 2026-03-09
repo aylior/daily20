@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v50.1</title>
+    <title>Daily20 Pro | v55</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,12 +14,17 @@
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
         .card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid #333; }
         
+        .header-box { text-align: center; margin-bottom: 15px; }
+        .app-title { color: var(--neon); margin: 0; display: inline-block; }
+        .v-tag { color: var(--dim); font-size: 10px; margin-left: 8px; font-family: monospace; }
+
         label { display: block; font-size: 11px; color: var(--neon); margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
-        input, textarea { background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; margin-bottom: 12px; }
+        input, select { background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; margin-bottom: 12px; }
+        
         button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
+        button:disabled { opacity: 0.3; }
         .btn-sec { background: #333; color: white; margin-top: 8px; }
-        .btn-icon { padding: 10px; width: 40px; font-size: 16px; border-radius: 8px; }
+        .btn-icon { padding: 8px; width: 36px; height: 36px; font-size: 16px; border-radius: 8px; flex-shrink: 0; }
 
         .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scrollbar-width: none; }
         .carousel-item { flex: 0 0 115px; text-align: center; cursor: pointer; }
@@ -29,19 +34,17 @@
         .carousel-item.selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 15px rgba(255, 153, 0, 0.4); }
 
         .progress-bg { width: 100%; height: 10px; background: #2a2a2a; border-radius: 5px; margin-top: 12px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--neon); transition: width 0.3s linear; }
-        .progress-fill.full { background: var(--success); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .progress-fill { height: 100%; background: var(--neon); transition: width 0.5s ease; }
+        .progress-fill.full { background: var(--success); box-shadow: 0 0 10px var(--success); }
 
         .streak-badge { background: linear-gradient(45deg, #ff4500, #ff9900); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 900; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; }
-        
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; }
         .cal-day { aspect-ratio: 1; border-radius: 6px; background: #2a2a2a; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
         .cal-day.done { background: var(--neon); color: black; font-weight: bold; }
-        .cal-day.today { border: 1px solid var(--neon); } /* Restored 'today' outline */
+        .cal-day.today { border: 1px solid var(--neon); }
 
         .player-frame { width: 100%; background: #000; border-radius: 16px; overflow: hidden; position: relative; aspect-ratio: 16/9; margin-bottom: 12px; }
-        #yt-player, iframe { width: 100% !important; height: 100% !important; position: absolute; top: 0; }
+        #yt-player { width: 100%; height: 100%; }
         
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .confetti { position: absolute; width: 8px; height: 8px; animation: fall 3s linear forwards; pointer-events: none; }
@@ -50,6 +53,7 @@
 </head>
 <body>
     <div id="root"></div>
+
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
@@ -63,12 +67,13 @@
             const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_lib')) || []);
             const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist')) || {});
             const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_goal')) || 20);
+            
             const [selectedId, setSelectedId] = useState(null);
             const [showOfflineLog, setShowOfflineLog] = useState(false);
             const [celebrate, setCelebrate] = useState(false);
             const [inspectingDate, setInspectingDate] = useState(null);
             
-            const [workout, setWorkout] = useState({ plan: [], idx: 0, videoSecondsLeft: 0 });
+            const [workout, setWorkout] = useState({ plan: [], idx: 0, seconds: 0 });
             const [isPlaying, setIsPlaying] = useState(false);
             const [paused, setPaused] = useState(false);
             const playerRef = useRef(null);
@@ -77,44 +82,56 @@
             const todayMins = hist[todayKey]?.totalMins || 0;
             const progressPct = Math.min(100, Math.round((todayMins / goal) * 100));
 
-            const streak = useMemo(() => {
-                let count = 0; let d = new Date();
-                while (true) {
-                    const k = getLocalDateKey(d);
-                    if ((hist[k]?.totalMins || 0) >= goal) { count++; d.setDate(d.getDate() - 1); }
-                    else if (k === todayKey) { d.setDate(d.getDate() - 1); continue; }
-                    else break;
-                }
-                return count;
-            }, [hist, goal, todayKey]);
-
             useEffect(() => {
                 localStorage.setItem('d20_lib', JSON.stringify(lib));
                 localStorage.setItem('d20_hist', JSON.stringify(hist));
                 localStorage.setItem('d20_goal', goal.toString());
             }, [lib, hist, goal]);
 
-            const logActivity = (minutes, title) => {
+            const logMinutes = (mins, title) => {
                 const tk = getLocalDateKey();
                 setHist(prev => {
                     const ex = prev[tk] || { totalMins: 0, videos: "" };
-                    const newTotal = ex.totalMins + minutes;
+                    const newTotal = ex.totalMins + mins;
                     if (newTotal >= goal && ex.totalMins < goal) setCelebrate(true);
-                    const videoLog = ex.videos.includes(title) ? ex.videos : (ex.videos + (ex.videos ? ", " : "") + title);
                     return { ...prev, [tk]: {
                         totalMins: newTotal,
-                        videos: videoLog
+                        videos: ex.videos + (ex.videos ? ", " : "") + title
                     }};
                 });
             };
 
+            const exportData = () => {
+                const data = JSON.stringify({ lib, hist, goal });
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `daily20_backup_${todayKey}.json`;
+                a.click();
+            };
+
+            const importData = (e) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const parsed = JSON.parse(ev.target.result);
+                        if (parsed.lib) setLib(parsed.lib);
+                        if (parsed.hist) setHist(parsed.hist);
+                        if (parsed.goal) setGoal(parsed.goal);
+                        alert("Import Successful!");
+                    } catch (err) { alert("Invalid File"); }
+                };
+                reader.readAsText(e.target.files[0]);
+            };
+
             const handleNext = () => {
-                const v = workout.plan[workout.idx];
-                logActivity(Math.ceil((v.durSec - (v.startSec || 0)) / 60), v.title);
+                const video = workout.plan[workout.idx];
+                const minsWon = Math.ceil((video.durSec - (video.startSec || 0)) / 60);
+                logMinutes(minsWon, video.title);
 
                 if (workout.idx + 1 < workout.plan.length) {
                     const nxt = workout.idx + 1;
-                    setWorkout(w => ({ ...w, idx: nxt, videoSecondsLeft: w.plan[nxt].durSec - (w.plan[nxt].startSec || 0) }));
+                    setWorkout(w => ({ ...w, idx: nxt, seconds: w.plan[nxt].durSec - (w.plan[nxt].startSec || 0) }));
                 } else {
                     setView('home');
                     if (playerRef.current) playerRef.current.destroy();
@@ -123,13 +140,13 @@
 
             useEffect(() => {
                 let t;
-                if (view === 'workout' && isPlaying && !paused && workout.videoSecondsLeft > 0) {
-                    t = setInterval(() => setWorkout(w => ({ ...w, videoSecondsLeft: w.videoSecondsLeft - 1 })), 1000);
-                } else if (view === 'workout' && workout.videoSecondsLeft <= 0 && isPlaying) {
+                if (view === 'workout' && isPlaying && !paused && workout.seconds > 0) {
+                    t = setInterval(() => setWorkout(w => ({ ...w, seconds: w.seconds - 1 })), 1000);
+                } else if (view === 'workout' && workout.seconds <= 0 && isPlaying) {
                     handleNext();
                 }
                 return () => clearInterval(t);
-            }, [view, isPlaying, paused, workout.videoSecondsLeft]);
+            }, [view, isPlaying, paused, workout.seconds]);
 
             useEffect(() => {
                 if (view === 'workout' && workout.plan[workout.idx]) {
@@ -152,14 +169,22 @@
                         <div key={i} className="confetti" style={{left: Math.random()*100+'vw', animationDelay: Math.random()*2+'s', backgroundColor: ['#ff9900','#2ecc71','#fff'][Math.floor(Math.random()*3)]}} />
                     ))}
                     
-                    <header style={{textAlign:'center', marginBottom:15}}>
-                        <h1 style={{color:'var(--neon)', margin:0, display:'inline-block'}}>DAILY20</h1>
-                        <span style={{fontSize:'12px', color:'var(--dim)', marginLeft:'8px', verticalAlign:'middle', fontWeight:'bold', fontFamily:'monospace'}}>v50.1</span>
+                    <header className="header-box">
+                        <h1 className="app-title">DAILY20</h1>
+                        <span className="v-tag">v55</span>
                     </header>
 
                     {view === 'home' && (
                         <main>
                             <div className="card">
+                                <label>Daily Goal</label>
+                                <select value={goal} onChange={e => setGoal(parseInt(e.target.value))}>
+                                    <option value="10">10 Minutes</option>
+                                    <option value="20">20 Minutes</option>
+                                    <option value="30">30 Minutes</option>
+                                    <option value="60">60 Minutes</option>
+                                </select>
+                                
                                 <label>Library</label>
                                 <div className="carousel">
                                     {lib.map(v => (
@@ -175,7 +200,7 @@
                                     let pool = [...lib].sort(() => 0.5 - Math.random());
                                     if (selectedId) pool = [lib.find(x => x.id === selectedId), ...pool.filter(x => x.id !== selectedId)];
                                     const plan = pool.slice(0, 4);
-                                    setWorkout({ plan, idx: 0, videoSecondsLeft: plan[0].durSec - (plan[0].startSec || 0) });
+                                    setWorkout({ plan, idx: 0, seconds: plan[0].durSec - (plan[0].startSec || 0) });
                                     setView('workout');
                                 }}>Start Training</button>
                                 <div className="progress-bg"><div className={`progress-fill ${progressPct >= 100 ? 'full' : ''}`} style={{width: `${progressPct}%`}}></div></div>
@@ -186,14 +211,12 @@
                             </div>
 
                             <div className="card" style={{textAlign:'center'}}>
-                                {streak > 0 && <div className="streak-badge">🔥 {streak} Day Streak</div>}
-                                <div style={{fontSize:38, fontWeight:900}}><span style={{color: progressPct >= 100 ? 'var(--success)' : 'var(--neon)'}}>{Math.floor(todayMins)}</span> / {goal}m</div>
+                                <div style={{fontSize:38, fontWeight:900}}><span style={{color: progressPct >= 100 ? 'var(--success)' : 'var(--neon)'}}>{todayMins}</span> / {goal}m</div>
                                 <div className="cal-grid">
                                     {Array.from({length:28}).map((_, i) => {
                                         const d = new Date(); d.setDate(d.getDate() - (27 - i));
                                         const k = getLocalDateKey(d);
-                                        // Restored the `k === todayKey ? 'today' : ''` logic
-                                        return <div key={k} className={`cal-day ${(hist[k]?.totalMins || 0) >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`} onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>{d.getDate()}<small style={{fontSize:7}}>{Math.floor(hist[k]?.totalMins || 0)}m</small></div>
+                                        return <div key={k} className={`cal-day ${(hist[k]?.totalMins || 0) >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`} onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>{d.getDate()}<small style={{fontSize:7}}>{hist[k]?.totalMins || 0}m</small></div>
                                     })}
                                 </div>
                             </div>
@@ -202,27 +225,34 @@
 
                     {view === 'lib' && (
                         <main>
-                            <button className="btn-sec" onClick={() => setView('home')}>Back</button>
-                            <form className="card" style={{marginTop:15}} onSubmit={e => {
+                            <div style={{display:'flex', gap:10, marginBottom:15}}>
+                                <button className="btn-sec btn-icon" onClick={() => setView('home')}>←</button>
+                                <button className="btn-sec" style={{flex:1, margin:0}} onClick={exportData}>Export</button>
+                                <button className="btn-sec" style={{flex:1, margin:0, position:'relative'}}>
+                                    Import <input type="file" onChange={importData} style={{position:'absolute', inset:0, opacity:0}} />
+                                </button>
+                            </div>
+                            
+                            <form className="card" onSubmit={e => {
                                 e.preventDefault(); const f = new FormData(e.target);
-                                // Restored robust time parser to prevent NaN errors
-                                const toS = (str) => { 
-                                    if (!str) return 0;
-                                    const p = str.split(':'); 
-                                    return p.length > 1 ? (parseInt(p[0])*60)+parseInt(p[1]) : parseInt(str) || 0; 
-                                };
+                                const toS = (str) => { if(!str) return 0; const p = str.split(':'); return p.length > 1 ? (parseInt(p[0])*60)+parseInt(p[1]) : parseInt(str) || 0; };
                                 setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), durSec: toS(f.get('d')), startSec: toS(f.get('s')) }, ...lib]);
                                 e.target.reset();
                             }}>
-                                <label>Add Video</label>
-                                <input name="t" required placeholder="Title" /><input name="u" required placeholder="URL" />
-                                <div style={{display:'flex', gap:10}}><input name="s" placeholder="Start (m:s)" style={{flex:1}}/><input name="d" required placeholder="End (m:s)" style={{flex:1}}/></div>
-                                <button type="submit">Add</button>
+                                <label>New Video</label>
+                                <input name="t" required placeholder="Title" />
+                                <input name="u" required placeholder="YouTube URL" />
+                                <div style={{display:'flex', gap:10}}>
+                                    <input name="s" placeholder="Start (0:00)" style={{flex:1}}/>
+                                    <input name="d" required placeholder="End (m:s)" style={{flex:1}}/>
+                                </div>
+                                <button type="submit">Add to Library</button>
                             </form>
+                            
                             <div className="card">
                                 {lib.map(v => (
-                                    <div key={v.id} style={{display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid #333'}}>
-                                        <div>{v.title}</div>
+                                    <div key={v.id} style={{display:'flex', alignItems:'center', gap:10, padding:'10px 0', borderBottom:'1px solid #333'}}>
+                                        <div style={{flex:1, fontSize:14}}>{v.title}</div>
                                         <button className="btn-icon" style={{background:'var(--danger)', color:'white'}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
                                     </div>
                                 ))}
@@ -234,13 +264,13 @@
                         <main>
                             <div className="player-frame"><div id="yt-player"></div></div>
                             <div className="card" style={{textAlign:'center'}}>
-                                <div style={{fontSize:54, fontWeight:900}}>{Math.floor(workout.videoSecondsLeft/60)}:{(workout.videoSecondsLeft%60).toString().padStart(2,'0')}</div>
-                                <h3>{workout.plan[workout.idx].title}</h3>
+                                <div style={{fontSize:54, fontWeight:900}}>{Math.floor(workout.seconds/60)}:{(workout.seconds%60).toString().padStart(2,'0')}</div>
+                                <h3 style={{margin:'10px 0'}}>{workout.plan[workout.idx].title}</h3>
                                 <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
                                     <button onClick={() => setPaused(!paused)}>{paused ? 'Resume' : 'Pause'}</button>
                                     <button className="btn-sec" onClick={handleNext}>Skip</button>
                                 </div>
-                                <button className="btn-sec" onClick={() => setView('home')} style={{marginTop:10}}>Exit Workout</button>
+                                <button className="btn-sec" onClick={() => { setView('home'); if(playerRef.current) playerRef.current.destroy(); }}>Exit Workout</button>
                             </div>
                         </main>
                     )}
@@ -251,10 +281,11 @@
                                 <h3>Log Activity</h3>
                                 <form onSubmit={e => {
                                     e.preventDefault(); const f = new FormData(e.target);
-                                    logActivity(parseInt(f.get('m')), f.get('a'));
+                                    logMinutes(parseInt(f.get('m')), f.get('a'));
                                     setShowOfflineLog(false);
                                 }}>
-                                    <input name="a" required placeholder="Activity" /><input type="number" name="m" required placeholder="Minutes" />
+                                    <input name="a" required placeholder="Activity (e.g. Yoga)" />
+                                    <input type="number" name="m" required placeholder="Minutes" />
                                     <button type="submit">Save</button>
                                 </form>
                             </div>
@@ -265,8 +296,8 @@
                         <div className="overlay" onClick={() => setInspectingDate(null)}>
                             <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
                                 <h3>{inspectingDate.full}</h3>
-                                <div style={{fontSize:24, fontWeight:900}}>{Math.floor(hist[inspectingDate.key]?.totalMins || 0)}m</div>
-                                <p style={{fontSize:12, color:'var(--dim)'}}>{hist[inspectingDate.key]?.videos || "No training data"}</p>
+                                <div style={{fontSize:24, fontWeight:900}}>{hist[inspectingDate.key]?.totalMins || 0}m</div>
+                                <p style={{fontSize:12, color:'var(--dim)', whiteSpace:'pre-wrap'}}>{hist[inspectingDate.key]?.videos || "No training data logged."}</p>
                                 <button className="btn-sec" onClick={() => setInspectingDate(null)}>Close</button>
                             </div>
                         </div>
