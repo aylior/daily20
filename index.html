@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v54</title>
+    <title>Daily20 Pro | v50.1</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -13,28 +13,36 @@
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
         .card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid #333; }
+        
         label { display: block; font-size: 11px; color: var(--neon); margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
         input, textarea { background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; margin-bottom: 12px; }
         button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button:disabled { opacity: 0.3; cursor: not-allowed; }
         .btn-sec { background: #333; color: white; margin-top: 8px; }
         .btn-icon { padding: 10px; width: 40px; font-size: 16px; border-radius: 8px; }
+
         .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scrollbar-width: none; }
         .carousel-item { flex: 0 0 115px; text-align: center; cursor: pointer; }
         .thumb-wrap { position: relative; width: 115px; height: 65px; border-radius: 10px; overflow: hidden; border: 2px solid transparent; }
         .carousel-thumb { width: 100%; height: 100%; object-fit: cover; }
         .dur-badge { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.85); color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; }
         .carousel-item.selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 15px rgba(255, 153, 0, 0.4); }
+
         .progress-bg { width: 100%; height: 10px; background: #2a2a2a; border-radius: 5px; margin-top: 12px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--neon); transition: width 0.3s linear; }
         .progress-fill.full { background: var(--success); animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
         .streak-badge { background: linear-gradient(45deg, #ff4500, #ff9900); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 900; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+        
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; }
         .cal-day { aspect-ratio: 1; border-radius: 6px; background: #2a2a2a; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
         .cal-day.done { background: var(--neon); color: black; font-weight: bold; }
+        .cal-day.today { border: 1px solid var(--neon); } /* Restored 'today' outline */
+
         .player-frame { width: 100%; background: #000; border-radius: 16px; overflow: hidden; position: relative; aspect-ratio: 16/9; margin-bottom: 12px; }
         #yt-player, iframe { width: 100% !important; height: 100% !important; position: absolute; top: 0; }
+        
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .confetti { position: absolute; width: 8px; height: 8px; animation: fall 3s linear forwards; pointer-events: none; }
         @keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
@@ -146,7 +154,7 @@
                     
                     <header style={{textAlign:'center', marginBottom:15}}>
                         <h1 style={{color:'var(--neon)', margin:0, display:'inline-block'}}>DAILY20</h1>
-                        <span style={{fontSize:'12px', color:'var(--dim)', marginLeft:'8px', verticalAlign:'middle', fontWeight:'bold', fontFamily:'monospace'}}>v54</span>
+                        <span style={{fontSize:'12px', color:'var(--dim)', marginLeft:'8px', verticalAlign:'middle', fontWeight:'bold', fontFamily:'monospace'}}>v50.1</span>
                     </header>
 
                     {view === 'home' && (
@@ -184,7 +192,8 @@
                                     {Array.from({length:28}).map((_, i) => {
                                         const d = new Date(); d.setDate(d.getDate() - (27 - i));
                                         const k = getLocalDateKey(d);
-                                        return <div key={k} className={`cal-day ${(hist[k]?.totalMins || 0) >= goal ? 'done' : ''}`} onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>{d.getDate()}<small style={{fontSize:7}}>{Math.floor(hist[k]?.totalMins || 0)}m</small></div>
+                                        // Restored the `k === todayKey ? 'today' : ''` logic
+                                        return <div key={k} className={`cal-day ${(hist[k]?.totalMins || 0) >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`} onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>{d.getDate()}<small style={{fontSize:7}}>{Math.floor(hist[k]?.totalMins || 0)}m</small></div>
                                     })}
                                 </div>
                             </div>
@@ -196,7 +205,12 @@
                             <button className="btn-sec" onClick={() => setView('home')}>Back</button>
                             <form className="card" style={{marginTop:15}} onSubmit={e => {
                                 e.preventDefault(); const f = new FormData(e.target);
-                                const toS = (str) => { const [m, s] = str.split(':'); return (parseInt(m) * 60) + (parseInt(s) || 0); };
+                                // Restored robust time parser to prevent NaN errors
+                                const toS = (str) => { 
+                                    if (!str) return 0;
+                                    const p = str.split(':'); 
+                                    return p.length > 1 ? (parseInt(p[0])*60)+parseInt(p[1]) : parseInt(str) || 0; 
+                                };
                                 setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), durSec: toS(f.get('d')), startSec: toS(f.get('s')) }, ...lib]);
                                 e.target.reset();
                             }}>
@@ -209,7 +223,7 @@
                                 {lib.map(v => (
                                     <div key={v.id} style={{display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid #333'}}>
                                         <div>{v.title}</div>
-                                        <button className="btn-icon" style={{background:'var(--danger)', height:30, padding:0, width:30}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
+                                        <button className="btn-icon" style={{background:'var(--danger)', color:'white'}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
                                     </div>
                                 ))}
                             </div>
