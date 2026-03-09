@@ -3,63 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v57</title>
+    <title>Daily20 Pro | v58</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --success: #2ecc71; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
-        .card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid #333; position: relative; }
+        .card { background: var(--card); padding: 15px; border-radius: 18px; margin-bottom: 12px; border: 1px solid #333; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         
-        /* Typography & Header */
-        .app-header { text-align: center; margin-bottom: 15px; }
-        .app-title { color: var(--neon); margin: 0; font-size: 26px; letter-spacing: 1px; }
-        .v-tag { color: var(--dim); font-size: 10px; font-family: monospace; }
+        .header-box { text-align: center; margin-bottom: 15px; }
+        .app-title { color: var(--neon); margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -1px; }
+        .v-tag { color: var(--dim); font-size: 10px; font-family: monospace; font-weight: bold; }
 
-        /* Carousel (v50 Restoration) */
-        .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scrollbar-width: none; }
-        .carousel::-webkit-scrollbar { display: none; }
-        .carousel-item { flex: 0 0 115px; text-align: center; cursor: pointer; transition: transform 0.2s; }
-        .carousel-item:active { transform: scale(0.95); }
-        .thumb-wrap { position: relative; width: 115px; height: 65px; border-radius: 10px; overflow: hidden; border: 2px solid transparent; background: #000; }
-        .carousel-thumb { width: 100%; height: 100%; object-fit: cover; }
-        .dur-badge { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.85); color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
-        .carousel-item.selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 15px rgba(255, 153, 0, 0.4); }
-
-        /* Button System (Restored Icons) */
+        /* Unified SVG Button System */
         .btn-row { display: flex; gap: 8px; margin-bottom: 15px; }
-        button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; flex: 1; }
+        button { background: var(--neon); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; flex: 1; transition: transform 0.1s, opacity 0.2s; }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
         .btn-sec { background: #333; color: white; }
         .btn-danger { background: var(--danger); color: white; }
-        .btn-icon { width: 42px; height: 42px; flex: none; padding: 0; font-size: 18px; }
-        button:disabled { opacity: 0.3; }
+        .btn-icon { width: 46px; height: 46px; flex: none; padding: 0; }
+        svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
-        /* Progress & Calendar */
-        .progress-bg { width: 100%; height: 8px; background: #2a2a2a; border-radius: 4px; margin: 12px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--neon); transition: width 0.5s ease; }
+        /* Carousel & Thumbs */
+        .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scrollbar-width: none; -ms-overflow-style: none; }
+        .carousel::-webkit-scrollbar { display: none; }
+        .carousel-item { flex: 0 0 115px; text-align: center; cursor: pointer; }
+        .thumb-wrap { position: relative; width: 115px; height: 65px; border-radius: 10px; overflow: hidden; border: 2.5px solid transparent; background: #222; }
+        .carousel-thumb { width: 100%; height: 100%; object-fit: cover; }
+        .dur-badge { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
+        .carousel-item.selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 15px rgba(255, 153, 0, 0.4); }
+
+        /* Calendar & Progress */
+        .progress-bg { width: 100%; height: 10px; background: #2a2a2a; border-radius: 5px; margin: 15px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--neon); transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; }
-        .cal-day { aspect-ratio: 1; border-radius: 6px; background: #2a2a2a; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid transparent; }
+        .cal-day { aspect-ratio: 1; border-radius: 8px; background: #2a2a2a; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid transparent; cursor: pointer; }
         .cal-day.done { background: var(--neon); color: black; font-weight: bold; }
-        .cal-day.today { border-color: var(--neon); }
+        .cal-day.today { border-color: var(--neon); box-shadow: inset 0 0 5px var(--neon); }
 
-        /* Library List & Edit Details */
+        /* Library List */
         .lib-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #333; }
-        .list-thumb { width: 70px; height: 40px; border-radius: 6px; object-fit: cover; background: #000; }
+        .list-thumb { width: 75px; height: 45px; border-radius: 8px; object-fit: cover; background: #000; flex-shrink: 0; }
         .lib-info { flex: 1; min-width: 0; }
-        .lib-title { font-size: 14px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .lib-dur { font-size: 11px; color: var(--dim); }
-
-        /* Overlays */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
-        input, select { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-size: 14px; }
-        label { display: block; font-size: 10px; color: var(--neon); margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
+        .lib-title { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lib-dur { font-size: 11px; color: var(--dim); margin-top: 2px; }
 
         /* Player */
-        .player-frame { width: 100%; background: #000; border-radius: 16px; overflow: hidden; aspect-ratio: 16/9; margin-bottom: 12px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .player-frame { width: 100%; background: #000; border-radius: 20px; overflow: hidden; aspect-ratio: 16/9; margin-bottom: 15px; position: relative; }
         iframe { width: 100%; height: 100%; border: none; }
+
+        /* Overlays */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
+        input, select { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; margin-bottom: 12px; font-size: 15px; }
+        label { display: block; font-size: 10px; color: var(--neon); margin-bottom: 5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .history-list { max-height: 200px; overflow-y: auto; text-align: left; background: #111; padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid #333; }
+        .history-item { font-size: 12px; padding: 6px 0; border-bottom: 1px solid #222; display: flex; gap: 8px; }
     </style>
 </head>
 <body>
@@ -68,31 +70,38 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // Icons
+        const Icons = {
+            Back: () => <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
+            Export: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>,
+            Import: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>,
+            Delete: () => <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>,
+            Edit: () => <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        };
+
         const getLocalDateKey = (d = new Date()) => {
             const offset = d.getTimezoneOffset() * 60000;
             return new Date(d.getTime() - offset).toISOString().split('T')[0];
         };
 
-        const toSeconds = (str) => {
-            if (!str || typeof str !== 'string') return 0;
-            const parts = str.split(':');
-            return parts.length > 1 ? (parseInt(parts[0]) * 60) + parseInt(parts[1]) : parseInt(str) || 0;
+        const toSec = (str) => {
+            if (!str) return 0;
+            const p = str.toString().split(':');
+            return p.length > 1 ? (parseInt(p[0]) * 60) + parseInt(p[1]) : parseInt(str) || 0;
         };
 
-        const formatTime = (sec) => {
-            const m = Math.floor(sec / 60);
-            const s = sec % 60;
-            return `${m}:${s.toString().padStart(2, '0')}`;
+        const fromSec = (s) => {
+            const m = Math.floor(s / 60);
+            const r = s % 60;
+            return `${m}:${r.toString().padStart(2, '0')}`;
         };
 
-        const getMediaMeta = (url) => {
-            const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
-            if (ytMatch) return { type: 'yt', id: ytMatch[1], thumb: `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg` };
-            
-            const igMatch = url.match(/(?:instagram\.com\/(?:p|reels|reel)\/)([^/?#&]+)/);
-            if (igMatch) return { type: 'ig', id: igMatch[1], thumb: `https://www.instagram.com/p/${igMatch[1]}/media/?size=m` };
-            
-            return { type: 'web', id: null, thumb: 'https://placehold.co/100x60/2a2a2a/ff9900?text=Video' };
+        const getMeta = (url) => {
+            const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
+            if (yt) return { type: 'yt', id: yt[1], thumb: `https://img.youtube.com/vi/${yt[1]}/mqdefault.jpg` };
+            const ig = url.match(/(?:instagram\.com\/(?:p|reels|reel)\/)([^/?#&]+)/);
+            if (ig) return { type: 'ig', id: ig[1], thumb: `https://images.weserv.nl/?url=www.instagram.com/p/${ig[1]}/media/?size=m` }; // Using weserv to bypass some referer blocks
+            return { type: 'web', id: null, thumb: 'https://placehold.co/120x80/222/ff9900?text=Video' };
         };
 
         const App = () => {
@@ -102,18 +111,19 @@
             const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_goal')) || 20);
             
             const [selectedId, setSelectedId] = useState(null);
-            const [showOfflineLog, setShowOfflineLog] = useState(false);
-            const [editingVideo, setEditingVideo] = useState(null);
+            const [offlineLog, setOfflineLog] = useState(false);
+            const [editing, setEditing] = useState(null);
+            const [inspecting, setInspecting] = useState(null);
             
             const [workout, setWorkout] = useState({ plan: [], idx: 0, secondsLeft: 0 });
             const [isPlaying, setIsPlaying] = useState(false);
             const [paused, setPaused] = useState(false);
             const playerRef = useRef(null);
-            const timerRef = useRef(0);
+            const accumRef = useRef(0);
 
             const todayKey = getLocalDateKey();
             const todayMins = hist[todayKey]?.totalMins || 0;
-            const progressPct = Math.min(100, (todayMins / goal) * 100);
+            const progress = Math.min(100, (todayMins / goal) * 100);
 
             useEffect(() => {
                 localStorage.setItem('d20_lib', JSON.stringify(lib));
@@ -121,36 +131,35 @@
                 localStorage.setItem('d20_goal', goal.toString());
             }, [lib, hist, goal]);
 
-            // Real-time minute tracking engine
+            // Timer Engine
             useEffect(() => {
-                let ticker;
+                let interval;
                 if (view === 'workout' && isPlaying && !paused) {
-                    ticker = setInterval(() => {
-                        timerRef.current += 1;
-                        if (timerRef.current >= 60) {
-                            addMinute(1);
-                            timerRef.current = 0;
+                    interval = setInterval(() => {
+                        accumRef.current += 1;
+                        if (accumRef.current >= 60) {
+                            logMins(1);
+                            accumRef.current = 0;
                         }
                         setWorkout(w => ({ ...w, secondsLeft: Math.max(0, w.secondsLeft - 1) }));
                     }, 1000);
                 }
-                return () => clearInterval(ticker);
+                return () => clearInterval(interval);
             }, [view, isPlaying, paused]);
 
-            const addMinute = (m, title = "") => {
+            const logMins = (m, title = "") => {
                 setHist(prev => {
                     const ex = prev[todayKey] || { totalMins: 0, videos: "" };
-                    const updatedVideos = title && !ex.videos.includes(title) 
-                        ? (ex.videos + (ex.videos ? ", " : "") + title) 
+                    const newList = title && !ex.videos.includes(title) 
+                        ? (ex.videos + (ex.videos ? "||" : "") + title) 
                         : ex.videos;
-                    return { ...prev, [todayKey]: { totalMins: ex.totalMins + m, videos: updatedVideos }};
+                    return { ...prev, [todayKey]: { totalMins: ex.totalMins + m, videos: newList }};
                 });
             };
 
             const handleNext = () => {
-                const currentVid = workout.plan[workout.idx];
-                addMinute(0, currentVid.title); // Just log the name on skip/end
-                
+                const cur = workout.plan[workout.idx];
+                logMins(0, cur.title); 
                 if (workout.idx + 1 < workout.plan.length) {
                     const nxt = workout.idx + 1;
                     const v = workout.plan[nxt];
@@ -163,7 +172,7 @@
             useEffect(() => {
                 if (view === 'workout') {
                     const v = workout.plan[workout.idx];
-                    const meta = getMediaMeta(v.url);
+                    const meta = getMeta(v.url);
                     if (meta.type === 'yt') {
                         if (playerRef.current?.destroy) playerRef.current.destroy();
                         playerRef.current = new window.YT.Player('yt-player', {
@@ -171,40 +180,35 @@
                             playerVars: { autoplay: 1, start: v.startSec || 0, controls: 1 },
                             events: { onStateChange: (e) => setIsPlaying(e.data === 1) }
                         });
-                    } else {
-                        setIsPlaying(true); 
-                    }
+                    } else { setIsPlaying(true); }
                 }
             }, [view, workout.idx]);
 
             return (
                 <div className="container">
-                    <header className="app-header">
+                    <header className="header-box">
                         <h1 className="app-title">DAILY20</h1>
-                        <span className="v-tag">PRO EDITION v57</span>
+                        <span className="v-tag">VERSION 58.0</span>
                     </header>
 
                     {view === 'home' && (
                         <main>
                             <div className="card">
-                                <label>Training Goal</label>
+                                <label>Target Goal</label>
                                 <select value={goal} onChange={e => setGoal(parseInt(e.target.value))}>
-                                    {[10, 15, 20, 30, 45, 60].map(g => <option key={g} value={g}>{g} Minutes</option>)}
+                                    {[10, 20, 30, 45, 60].map(g => <option key={g} value={g}>{g} Minutes</option>)}
                                 </select>
                                 
-                                <label>Library Carousel</label>
+                                <label>Library Pick</label>
                                 <div className="carousel">
-                                    {lib.map(v => {
-                                        const meta = getMediaMeta(v.url);
-                                        return (
-                                            <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id === selectedId ? null : v.id)}>
-                                                <div className="thumb-wrap">
-                                                    <img className="carousel-thumb" src={meta.thumb} />
-                                                    <div className="dur-badge">{Math.floor((v.durSec - (v.startSec || 0))/60)}m</div>
-                                                </div>
+                                    {lib.map(v => (
+                                        <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id === selectedId ? null : v.id)}>
+                                            <div className="thumb-wrap">
+                                                <img className="carousel-thumb" src={getMeta(v.url).thumb} />
+                                                <div className="dur-badge">{Math.floor((v.durSec - (v.startSec || 0))/60)}m</div>
                                             </div>
-                                        );
-                                    })}
+                                        </div>
+                                    ))}
                                 </div>
 
                                 <button style={{marginTop:15}} disabled={lib.length === 0} onClick={() => {
@@ -212,27 +216,27 @@
                                     if (selectedId) pool = [lib.find(x => x.id === selectedId), ...pool.filter(x => x.id !== selectedId)];
                                     const plan = pool.slice(0, 4);
                                     setWorkout({ plan, idx: 0, secondsLeft: plan[0].durSec - (plan[0].startSec || 0) });
-                                    timerRef.current = 0;
+                                    accumRef.current = 0;
                                     setView('workout');
-                                }}>Start Session</button>
+                                }}>Start Workout</button>
                                 
-                                <div className="progress-bg"><div className="progress-fill" style={{width: `${progressPct}%`}}></div></div>
+                                <div className="progress-bg"><div className="progress-fill" style={{width: `${progress}%`}}></div></div>
                                 
                                 <div className="btn-row">
-                                    <button className="btn-sec" onClick={() => setShowOfflineLog(true)}>+ Offline</button>
+                                    <button className="btn-sec" onClick={() => setOfflineLog(true)}>Manual</button>
                                     <button className="btn-sec" onClick={() => setView('lib')}>Library</button>
                                 </div>
                             </div>
 
                             <div className="card" style={{textAlign:'center'}}>
-                                <div style={{fontSize:32, fontWeight:900}}>{Math.floor(todayMins)} <small style={{fontSize:14, color:'var(--dim)'}}>/ {goal}m</small></div>
+                                <div style={{fontSize:36, fontWeight:900}}>{Math.floor(todayMins)} <span style={{fontSize:16, color:'var(--dim)'}}>/ {goal}m</span></div>
                                 <div className="cal-grid">
                                     {Array.from({length: 21}).map((_, i) => {
                                         const d = new Date(); d.setDate(d.getDate() - (20 - i));
                                         const k = getLocalDateKey(d);
                                         const m = hist[k]?.totalMins || 0;
                                         return (
-                                            <div key={k} className={`cal-day ${m >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`}>
+                                            <div key={k} className={`cal-day ${m >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`} onClick={() => setInspecting({key: k, date: d.toDateString()})}>
                                                 {d.getDate()}
                                                 <b style={{fontSize:8}}>{Math.floor(m)}m</b>
                                             </div>
@@ -246,14 +250,14 @@
                     {view === 'lib' && (
                         <main>
                             <div className="btn-row">
-                                <button className="btn-sec btn-icon" onClick={() => setView('home')}>←</button>
+                                <button className="btn-sec btn-icon" onClick={() => setView('home')}><Icons.Back /></button>
                                 <button className="btn-sec" onClick={() => {
-                                    const a = document.createElement('a');
-                                    a.href = URL.createObjectURL(new Blob([JSON.stringify({ lib, hist, goal })], { type: 'application/json' }));
+                                    const blob = new Blob([JSON.stringify({ lib, hist, goal })], { type: 'application/json' });
+                                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
                                     a.download = `Daily20_Backup.json`; a.click();
-                                }}>📤 Export</button>
+                                }}><Icons.Export /> Export</button>
                                 <button className="btn-sec" style={{position:'relative'}}>
-                                    📥 Import <input type="file" onChange={e => {
+                                    <Icons.Import /> Import <input type="file" onChange={e => {
                                         const reader = new FileReader();
                                         reader.onload = (ev) => {
                                             const d = JSON.parse(ev.target.result);
@@ -267,13 +271,7 @@
                             <form className="card" onSubmit={e => {
                                 e.preventDefault();
                                 const f = new FormData(e.target);
-                                setLib([{ 
-                                    id: Date.now(), 
-                                    title: f.get('t'), 
-                                    url: f.get('u'), 
-                                    durSec: toSeconds(f.get('d')), 
-                                    startSec: toSeconds(f.get('s')) 
-                                }, ...lib]);
+                                setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), durSec: toSec(f.get('d')), startSec: toSec(f.get('s')) }, ...lib]);
                                 e.target.reset();
                             }}>
                                 <label>Add Video</label>
@@ -283,19 +281,19 @@
                                     <input name="s" placeholder="Start (0:00)" />
                                     <input name="d" required placeholder="End (m:s)" />
                                 </div>
-                                <button type="submit">Add to Library</button>
+                                <button type="submit">Add to List</button>
                             </form>
 
                             <div className="card">
                                 {lib.map(v => (
                                     <div key={v.id} className="lib-item">
-                                        <img src={getMediaMeta(v.url).thumb} className="list-thumb" />
+                                        <img src={getMeta(v.url).thumb} className="list-thumb" />
                                         <div className="lib-info">
                                             <div className="lib-title">{v.title}</div>
-                                            <div className="lib-dur">{formatTime(v.durSec - (v.startSec || 0))} duration</div>
+                                            <div className="lib-dur">{fromSec(v.durSec - (v.startSec || 0))} session</div>
                                         </div>
-                                        <button className="btn-sec btn-icon" onClick={() => setEditingVideo({...v, sStr: formatTime(v.startSec || 0), dStr: formatTime(v.durSec)})}>✎</button>
-                                        <button className="btn-danger btn-icon" onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
+                                        <button className="btn-sec btn-icon" onClick={() => setEditing({...v, sStr: fromSec(v.startSec || 0), dStr: fromSec(v.durSec)})}><Icons.Edit /></button>
+                                        <button className="btn-danger btn-icon" onClick={() => setLib(lib.filter(x => x.id !== v.id))}><Icons.Delete /></button>
                                     </div>
                                 ))}
                             </div>
@@ -305,79 +303,78 @@
                     {view === 'workout' && (
                         <main>
                             <div className="player-frame">
-                                {getMediaMeta(workout.plan[workout.idx].url).type === 'yt' ? (
+                                {getMeta(workout.plan[workout.idx].url).type === 'yt' ? (
                                     <div id="yt-player"></div>
                                 ) : (
                                     <iframe src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowFullScreen></iframe>
                                 )}
                             </div>
                             <div className="card" style={{textAlign:'center'}}>
-                                <div style={{fontSize:48, fontWeight:900, color:'var(--neon)'}}>{formatTime(workout.secondsLeft)}</div>
+                                <div style={{fontSize:52, fontWeight:900, color:'var(--neon)'}}>{fromSec(workout.secondsLeft)}</div>
                                 <h3 style={{margin:'10px 0'}}>{workout.plan[workout.idx].title}</h3>
                                 <div className="btn-row">
-                                    <button onClick={() => setPaused(!paused)}>{paused ? '▶ Resume' : '⏸ Pause'}</button>
-                                    <button className="btn-sec" onClick={handleNext}>⏭ Skip</button>
+                                    <button onClick={() => setPaused(!paused)}>{paused ? 'Resume' : 'Pause'}</button>
+                                    <button className="btn-sec" onClick={handleNext}>Skip</button>
                                 </div>
-                                <button className="btn-sec" style={{marginTop:10}} onClick={() => setView('home')}>🚪 Exit</button>
+                                <button className="btn-sec" style={{marginTop:10}} onClick={() => setView('home')}>Exit</button>
                             </div>
                         </main>
                     )}
 
-                    {/* Restored Offline Log Component */}
-                    {showOfflineLog && (
-                        <div className="overlay" onClick={() => setShowOfflineLog(false)}>
+                    {/* Modals */}
+                    {offlineLog && (
+                        <div className="overlay" onClick={() => setOfflineLog(false)}>
                             <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
-                                <h3>Log Activity</h3>
+                                <h3>Manual Log</h3>
                                 <form onSubmit={e => {
                                     e.preventDefault();
                                     const f = new FormData(e.target);
-                                    addMinute(parseInt(f.get('m')), f.get('a'));
-                                    setShowOfflineLog(false);
+                                    logMins(parseInt(f.get('m')), f.get('a'));
+                                    setOfflineLog(false);
                                 }}>
-                                    <label>Activity Name</label>
-                                    <input name="a" required placeholder="Yoga, Running, etc." />
-                                    <label>Minutes</label>
+                                    <label>Activity</label>
+                                    <input name="a" required placeholder="Yoga, Boxing, etc." />
+                                    <label>Duration (Mins)</label>
                                     <input type="number" name="m" required placeholder="20" />
-                                    <button type="submit">Save Training</button>
-                                    <button type="button" className="btn-sec" onClick={() => setShowOfflineLog(false)}>Cancel</button>
+                                    <button type="submit">Log Minutes</button>
                                 </form>
                             </div>
                         </div>
                     )}
 
-                    {/* Full Video Edit Suite */}
-                    {editingVideo && (
+                    {inspecting && (
+                        <div className="overlay" onClick={() => setInspecting(null)}>
+                            <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
+                                <h3>{inspecting.date}</h3>
+                                <div style={{fontSize:28, fontWeight:900}}>{Math.floor(hist[inspecting.key]?.totalMins || 0)}m</div>
+                                <label style={{marginTop:15}}>Activity History</label>
+                                <div className="history-list">
+                                    {hist[inspecting.key]?.videos?.split('||').map((v, i) => (
+                                        <div key={i} className="history-item">🔥 {v}</div>
+                                    )) || "No specific videos logged."}
+                                </div>
+                                <button className="btn-sec" style={{marginTop:15}} onClick={() => setInspecting(null)}>Close</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {editing && (
                         <div className="overlay">
                             <div className="card" style={{width:'90%'}}>
-                                <h3>Edit Details</h3>
+                                <h3>Edit Video</h3>
                                 <label>Title</label>
-                                <input value={editingVideo.title} onChange={e => setEditingVideo({...editingVideo, title: e.target.value})} />
+                                <input value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} />
                                 <label>URL</label>
-                                <input value={editingVideo.url} onChange={e => setEditingVideo({...editingVideo, url: e.target.value})} />
+                                <input value={editing.url} onChange={e => setEditing({...editing, url: e.target.value})} />
                                 <div className="btn-row">
-                                    <div style={{flex:1}}>
-                                        <label>Start (m:s)</label>
-                                        <input value={editingVideo.sStr} onChange={e => setEditingVideo({...editingVideo, sStr: e.target.value})} />
-                                    </div>
-                                    <div style={{flex:1}}>
-                                        <label>End (m:s)</label>
-                                        <input value={editingVideo.dStr} onChange={e => setEditingVideo({...editingVideo, dStr: e.target.value})} />
-                                    </div>
+                                    <div style={{flex:1}}><label>Start</label><input value={editing.sStr} onChange={e => setEditing({...editing, sStr: e.target.value})} /></div>
+                                    <div style={{flex:1}}><label>End</label><input value={editing.dStr} onChange={e => setEditing({...editing, dStr: e.target.value})} /></div>
                                 </div>
-                                <div style={{textAlign:'center', marginBottom:15, fontSize:12, color:'var(--neon)'}}>
-                                    Calculated Duration: {formatTime(toSeconds(editingVideo.dStr) - toSeconds(editingVideo.sStr))}
-                                </div>
-                                <div className="btn-row">
-                                    <button onClick={() => {
-                                        setLib(lib.map(x => x.id === editingVideo.id ? {
-                                            ...editingVideo,
-                                            startSec: toSeconds(editingVideo.sStr),
-                                            durSec: toSeconds(editingVideo.dStr)
-                                        } : x));
-                                        setEditingVideo(null);
-                                    }}>Save Changes</button>
-                                    <button className="btn-sec" onClick={() => setEditingVideo(null)}>Cancel</button>
-                                </div>
+                                <button onClick={() => {
+                                    setLib(lib.map(x => x.id === editing.id ? { ...editing, startSec: toSec(editing.sStr), durSec: toSec(editing.dStr) } : x));
+                                    setEditing(null);
+                                }}>Save Changes</button>
+                                <button className="btn-sec" style={{marginTop:10}} onClick={() => setEditing(null)}>Cancel</button>
                             </div>
                         </div>
                     )}
