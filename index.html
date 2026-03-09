@@ -3,68 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v34</title>
+    <title>Daily20 Pro | v35</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
-        :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; }
+        :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --warning: #f39c12; --success: #2ecc71; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; }
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
         .card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid #333; }
+        
+        /* Forms & Buttons */
         label { display: block; font-size: 11px; color: var(--neon); margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
         input { background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; margin-bottom: 12px; }
-        button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; }
+        button { background: var(--neon); color: black; border: none; padding: 14px; border-radius: 10px; font-weight: 800; width: 100%; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        button:disabled { opacity: 0.5; }
         .btn-sec { background: #333; color: white; margin-top: 8px; }
+
+        /* Icon Buttons */
+        .icon-btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .icon-btn { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 12px; flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .icon-btn svg { width: 18px; height: 18px; stroke: var(--neon); fill: none; stroke-width: 2.5; margin-right: 8px; }
+
+        /* Stats & Calendar */
+        .daily-stat { background: #1e1e1e; border-radius: 16px; padding: 15px; text-align: center; margin-bottom: 12px; border: 1px solid #333; }
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; }
         .cal-day { aspect-ratio: 1; border-radius: 6px; background: #2a2a2a; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
         .cal-day.done { background: var(--neon); color: black; font-weight: bold; }
         .cal-day.today { border: 1.5px solid var(--neon); }
+
+        /* Library & Media */
         .lib-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #333; }
         .lib-thumb { width: 50px; height: 30px; border-radius: 4px; object-fit: cover; }
         .edit-box { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid #444; }
-        .carousel { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0; margin-bottom: 15px; }
-        .carousel-item { flex: 0 0 100px; text-align: center; }
+        
+        .carousel { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0; margin-bottom: 15px; scrollbar-width: none; }
+        .carousel-item { flex: 0 0 100px; text-align: center; cursor: pointer; }
         .carousel-thumb { width: 100px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid transparent; }
-        .selected .carousel-thumb { border-color: var(--neon); }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .selected .carousel-thumb { border-color: var(--neon); transform: scale(1.05); }
+
+        .player-wrapper { width: 100%; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid #333; margin-bottom: 8px; aspect-ratio: 16/9; }
+        .player-wrapper.insta { aspect-ratio: 9/16; max-height: 50vh; }
+        #yt-player, .insta-player { width: 100%; height: 100%; border: 0; }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .streak-fire { color: #ff4500; font-size: 24px; font-weight: 900; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
+
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        const Icons = {
+            Back: () => <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
+            Export: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4m12-7-5-5-5 5m5-5v12"/></svg>,
+            Import: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5m-5 5V3"/></svg>,
+            Flame: () => <svg style={{width:24, height:24, stroke:'#ff4500'}} viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3 1.07.13 2 1.3 2 3s-1 3-1 3M12 2C12 2 7 5.5 7 10.5a5 5 0 0 0 10 0c0-4.5-5-8.5-5-8.5Z"/></svg>
+        };
+
         const App = () => {
             const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_v34_lib')) || []);
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_v34_hist')) || {});
-            const [goal, setGoal] = useState(20);
+            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_v35_lib')) || []);
+            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_v35_hist')) || {});
+            const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_v35_goal')) || 20);
+            
             const [editingId, setEditingId] = useState(null);
             const [inspectingDate, setInspectingDate] = useState(null);
             const [selectedId, setSelectedId] = useState(null);
+            
+            // Workout State
+            const [workout, setWorkout] = useState({ plan: [], idx: 0, seconds: 0, sessionMins: 0 });
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [timerOverride, setTimerOverride] = useState(false);
+            const [showSummary, setShowSummary] = useState(false);
+            const playerRef = useRef(null);
+
+            const todayKey = new Date().toISOString().split('T')[0];
+            const todayMins = hist[todayKey]?.totalMins || 0;
 
             useEffect(() => {
-                localStorage.setItem('d20_v34_lib', JSON.stringify(lib));
-                localStorage.setItem('d20_v34_hist', JSON.stringify(hist));
-            }, [lib, hist]);
+                localStorage.setItem('d20_v35_lib', JSON.stringify(lib));
+                localStorage.setItem('d20_v35_hist', JSON.stringify(hist));
+                localStorage.setItem('d20_v35_goal', goal);
+            }, [lib, hist, goal]);
 
-            // Conversion Helpers
+            // Time Helpers
             const toSecs = (mm_ss) => {
-                if (!mm_ss || !mm_ss.includes(':')) return parseInt(mm_ss) || 0;
+                if (!mm_ss || !String(mm_ss).includes(':')) return parseInt(mm_ss) || 0;
                 const [m, s] = mm_ss.split(':');
                 return (parseInt(m) * 60) + (parseInt(s) || 0);
             };
             const fromSecs = (s) => {
+                if (isNaN(s)) return "0:00";
                 const mins = Math.floor(s / 60);
                 const secs = s % 60;
                 return `${mins}:${secs.toString().padStart(2, '0')}`;
             };
 
             const getYTID = (u) => u?.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/)?.[1];
-            const getThumb = (v) => v.url.includes('instagram.com') ? 'https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg' : `https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`;
-
+            const isInsta = (u) => u?.includes('instagram.com');
+            const getThumb = (v) => isInsta(v.url) ? 'https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg' : `https://img.youtube.com/vi/${getYTID(v.url)}/mqdefault.jpg`;
+            
             const getCalendarDays = () => {
                 const days = []; const today = new Date();
                 for (let i = 27; i >= 0; i--) {
@@ -74,29 +116,104 @@
                 return days;
             };
 
+            const calculateStreak = () => {
+                let streak = 0, checkDate = new Date();
+                while (true) {
+                    const k = checkDate.toISOString().split('T')[0];
+                    if ((hist[k]?.totalMins || 0) >= goal) { streak++; checkDate.setDate(checkDate.getDate() - 1); }
+                    else if (k === todayKey) { checkDate.setDate(checkDate.getDate() - 1); }
+                    else break;
+                }
+                return streak;
+            };
+
+            // Workout Logic
+            const cleanup = () => { if (playerRef.current?.destroy) playerRef.current.destroy(); playerRef.current = null; setIsPlaying(false); };
+            
+            const creditVideo = (vid) => {
+                // Calculate credited minutes based on total planned seconds, not remaining seconds
+                const mins = Math.max(1, Math.ceil(vid.durSec / 60));
+                setHist(prev => {
+                    const day = prev[todayKey] || { videos: "", totalMins: 0 };
+                    return { ...prev, [todayKey]: { videos: day.videos + (day.videos ? ", " : "") + vid.title, totalMins: day.totalMins + mins }};
+                });
+                setWorkout(w => ({ ...w, sessionMins: w.sessionMins + mins }));
+            };
+
+            const handleSkip = () => {
+                const cur = workout.plan[workout.idx];
+                if (cur) creditVideo(cur);
+                
+                if (workout.idx < workout.plan.length - 1) {
+                    const nxt = workout.idx + 1;
+                    setWorkout(w => ({ ...w, idx: nxt, seconds: w.plan[nxt].durSec }));
+                    setTimerOverride(false);
+                } else { 
+                    cleanup(); setView('home'); setShowSummary(true); 
+                }
+            };
+
+            useEffect(() => {
+                let t;
+                if (view === 'workout' && isPlaying && !timerOverride && workout.seconds > 0) {
+                    t = setInterval(() => setWorkout(w => ({ ...w, seconds: w.seconds - 1 })), 1000);
+                } else if (view === 'workout' && workout.seconds <= 0 && isPlaying) {
+                    handleSkip();
+                }
+                return () => clearInterval(t);
+            }, [view, isPlaying, timerOverride, workout.seconds]);
+
+            useEffect(() => {
+                if (view === 'workout' && workout.plan[workout.idx]) {
+                    const v = workout.plan[workout.idx];
+                    if (!isInsta(v.url)) {
+                        const init = () => { 
+                            cleanup(); 
+                            playerRef.current = new window.YT.Player('yt-player', { 
+                                videoId: getYTID(v.url), 
+                                playerVars: { 'autoplay':1, 'start': v.startSec || 0, 'playsinline':1, 'controls':1 }, 
+                                events: { 'onStateChange': (e) => setIsPlaying(e.data === 1) } 
+                            }); 
+                        };
+                        window.YT && window.YT.Player ? init() : setTimeout(init, 1000);
+                    } else {
+                        setIsPlaying(true);
+                    }
+                }
+            }, [view, workout.idx]);
+
             return (
                 <div className="container">
-                    <h1 style={{textAlign:'center', color:'var(--neon)', letterSpacing:2}}>DAILY20</h1>
+                    <header style={{textAlign:'center', marginBottom:15}} onClick={() => setView('home')}>
+                        <h1 style={{color:'var(--neon)', margin:0, letterSpacing:2}}>DAILY20</h1>
+                        {calculateStreak() > 0 && <div className="streak-fire"><Icons.Flame /> {calculateStreak()} DAY STREAK</div>}
+                    </header>
 
                     {view === 'home' && (
                         <main>
                             <div className="card">
                                 <div className="carousel">
-                                    {lib.map(v => (
-                                        <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id)}>
+                                    {lib.length === 0 ? <p style={{color:'var(--dim)', width:'100%', textAlign:'center'}}>Library empty.</p> : lib.map(v => (
+                                        <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(selectedId === v.id ? null : v.id)}>
                                             <img className="carousel-thumb" src={getThumb(v)} />
-                                            <div style={{fontSize:10, color:'white'}}>{v.title}</div>
+                                            <div style={{fontSize:10, color: selectedId === v.id ? 'var(--neon)' : 'white', overflow:'hidden', whiteSpace:'nowrap'}}>{v.title}</div>
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={() => alert("Workout view is standard. Let's focus on library/edit fixes.")}>Start Training</button>
+                                <button disabled={lib.length === 0} onClick={() => {
+                                    const pool = selectedId ? [lib.find(v => v.id === selectedId), ...lib.filter(v => v.id !== selectedId)] : [...lib].sort(() => 0.5 - Math.random());
+                                    const plan = pool.slice(0, 4);
+                                    setWorkout({ plan, idx: 0, seconds: plan[0].durSec, sessionMins: 0 });
+                                    setView('workout');
+                                }}>Start Training</button>
                                 <button className="btn-sec" onClick={() => setView('lib')}>Library & Settings</button>
                             </div>
 
                             <div className="daily-stat">
+                                <div style={{fontSize:'34px', fontWeight:'900'}}><span style={{color:'var(--neon)'}}>{todayMins}</span> / {goal}m</div>
                                 <div className="cal-grid">
                                     {getCalendarDays().map(d => (
-                                        <div key={d.key} className={`cal-day ${ (hist[d.key]?.totalMins || 0) >= goal ? 'done' : ''}`} onClick={() => setInspectingDate(d)}>
+                                        <div key={d.key} className={`cal-day ${ (hist[d.key]?.totalMins || 0) >= goal ? 'done' : ''} ${d.key === todayKey ? 'today' : ''}`} onClick={() => setInspectingDate(d)}>
                                             {d.date}
                                             <small style={{fontSize:8}}>{hist[d.key]?.totalMins || 0}m</small>
                                         </div>
@@ -108,19 +225,27 @@
 
                     {view === 'lib' && (
                         <main>
-                            <button className="btn-sec" style={{marginBottom:15}} onClick={() => setView('home')}>← Back Home</button>
+                            <div className="icon-btn-group">
+                                <div className="icon-btn" onClick={() => setView('home')}><Icons.Back /> Back</div>
+                                <div className="icon-btn" onClick={() => {
+                                    const blob = new Blob([JSON.stringify({lib, hist, goal})], {type: 'application/json'});
+                                    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'daily20_v35.json'; a.click();
+                                }}><Icons.Export /> Export</div>
+                                <label className="icon-btn">
+                                    <Icons.Import /> Import
+                                    <input type="file" style={{display:'none'}} accept=".json" onChange={(e) => {
+                                        const r = new FileReader();
+                                        r.onload = (ev) => {
+                                            try { const d = JSON.parse(ev.target.result); setLib(d.lib || []); setHist(d.hist || {}); setGoal(d.goal || 20); alert("Data imported!"); } catch(err) { alert("Invalid file."); }
+                                        };
+                                        if(e.target.files[0]) r.readAsText(e.target.files[0]);
+                                    }} />
+                                </label>
+                            </div>
                             
                             <form className="card" onSubmit={e => {
-                                e.preventDefault();
-                                const f = new FormData(e.target);
-                                const newVid = {
-                                    id: Date.now(),
-                                    title: f.get('t'),
-                                    url: f.get('u'),
-                                    durSec: toSecs(f.get('d')), // Store as total seconds
-                                    startSec: toSecs(f.get('s'))
-                                };
-                                setLib([...lib, newVid]);
+                                e.preventDefault(); const f = new FormData(e.target);
+                                setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), durSec: toSecs(f.get('d')), startSec: toSecs(f.get('s')) }, ...lib]);
                                 e.target.reset();
                             }}>
                                 <label>Video URL</label>
@@ -128,7 +253,7 @@
                                 <label>Video Title</label>
                                 <input name="t" placeholder="e.g. Morning Yoga" required />
                                 <div style={{display:'flex', gap:10}}>
-                                    <div style={{flex:1}}><label>Total Duration (mm:ss)</label><input name="d" placeholder="10:00" required /></div>
+                                    <div style={{flex:1}}><label>Duration (mm:ss)</label><input name="d" placeholder="10:00" required /></div>
                                     <div style={{flex:1}}><label>Start At (mm:ss)</label><input name="s" placeholder="0:00" /></div>
                                 </div>
                                 <button type="submit">Add to Library</button>
@@ -139,8 +264,8 @@
                                     <div key={v.id}>
                                         <div className="lib-item">
                                             <img className="lib-thumb" src={getThumb(v)} />
-                                            <div style={{flexGrow:1}}>
-                                                <div style={{fontWeight:'bold'}}>{v.title}</div>
+                                            <div style={{flexGrow:1, overflow:'hidden'}}>
+                                                <div style={{fontWeight:'bold', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{v.title}</div>
                                                 <small style={{color:'var(--dim)'}}>{fromSecs(v.durSec)}</small>
                                             </div>
                                             <button style={{width:40, padding:5}} onClick={() => setEditingId(editingId === v.id ? null : v.id)}>✎</button>
@@ -156,7 +281,7 @@
                                                 <label>Start Timestamp (mm:ss)</label>
                                                 <input defaultValue={fromSecs(v.startSec || 0)} onBlur={e => setLib(lib.map(x => x.id === v.id ? {...x, startSec: toSecs(e.target.value)} : x))} />
                                                 
-                                                <button className="btn-sec" style={{background:'var(--danger)'}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>Delete Video</button>
+                                                <button className="btn-sec" style={{background:'var(--danger)', marginTop:10}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>Delete Video</button>
                                             </div>
                                         )}
                                     </div>
@@ -165,15 +290,48 @@
                         </main>
                     )}
 
+                    {view === 'workout' && workout.plan[workout.idx] && (
+                        <main style={{textAlign:'center'}}>
+                            <div className={`player-wrapper ${isInsta(workout.plan[workout.idx].url) ? 'insta' : ''}`}>
+                                {isInsta(workout.plan[workout.idx].url) ? <iframe className="insta-player" src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowTransparency="true" allowFullScreen></iframe> : <div id="yt-player"></div>}
+                            </div>
+                            <div className="card">
+                                <div style={{fontSize:54, fontWeight:900, color: isPlaying ? 'var(--neon)' : 'var(--dim)', fontVariantNumeric:'tabular-nums'}}>{fromSecs(workout.seconds)}</div>
+                                <p style={{fontWeight:'bold', marginBottom:15}}>{workout.plan[workout.idx].title}</p>
+                                <button onClick={() => setTimerOverride(!timerOverride)} style={{background: timerOverride ? 'var(--success)' : 'var(--warning)', marginBottom:10}}>{timerOverride ? 'Resume' : 'Pause'}</button>
+                                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
+                                    <button className="btn-sec" onClick={handleSkip}>Skip</button>
+                                    <button className="btn-sec" onClick={() => { cleanup(); setView('home'); if(workout.sessionMins > 0) setShowSummary(true); }}>Exit</button>
+                                </div>
+                            </div>
+                        </main>
+                    )}
+
                     {inspectingDate && (
                         <div className="overlay" onClick={() => setInspectingDate(null)}>
                             <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
-                                <h3>{inspectingDate.full}</h3>
-                                <p>Total Training: {hist[inspectingDate.key]?.totalMins || 0}m</p>
-                                <div style={{maxHeight:150, overflowY:'auto', borderTop:'1px solid #333', paddingTop:10}}>
-                                    {hist[inspectingDate.key]?.videos || "No videos logged."}
+                                <h3 style={{margin:0, color:'var(--neon)'}}>{inspectingDate.full}</h3>
+                                <hr style={{borderColor:'#333', margin:'10px 0'}} />
+                                <div style={{fontSize:24, fontWeight:900, marginBottom:10}}>{hist[inspectingDate.key]?.totalMins || 0} Minutes Total</div>
+                                <p style={{color:'var(--dim)', fontSize:12, textTransform:'uppercase'}}>Videos Watched:</p>
+                                <div style={{maxHeight:200, overflowY:'auto'}}>
+                                    {hist[inspectingDate.key]?.videos ? hist[inspectingDate.key].videos.split(',').map((v,i) => (
+                                        <div key={i} style={{padding:'8px 0', borderBottom:'1px solid #333'}}>{v}</div>
+                                    )) : <div style={{color:'var(--dim)'}}>No training recorded.</div>}
                                 </div>
-                                <button className="btn-sec" onClick={() => setInspectingDate(null)}>Close</button>
+                                <button className="btn-sec" onClick={() => setInspectingDate(null)} style={{marginTop:15}}>Close</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showSummary && (
+                        <div className="overlay" onClick={() => setShowSummary(false)}>
+                            <div className="card" style={{width:'100%', textAlign:'center', border:'2px solid var(--neon)'}} onClick={e => e.stopPropagation()}>
+                                <h1 style={{color:'var(--neon)', margin:0}}>SESSION SUMMARY</h1>
+                                <div style={{fontSize:70, fontWeight:900, margin:'15px 0'}}>+{workout.sessionMins}m</div>
+                                <div style={{fontSize:20, fontWeight:'bold', color:'var(--dim)'}}>{todayMins} / {goal}m Total Today</div>
+                                <div className="streak-fire" style={{fontSize:30}}><Icons.Flame /> {calculateStreak()} DAY STREAK</div>
+                                <button onClick={() => setShowSummary(false)} style={{marginTop:20}}>Keep Going</button>
                             </div>
                         </div>
                     )}
