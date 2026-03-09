@@ -2,70 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, a<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v61</title>
+    <title>Daily20 Pro | v62</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <style>
-        :root { --bg: #0a0a0a; --card: #161616; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --success: #2ecc71; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; }
-        .container { max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+        :root { --bg: #0a0a0a; --card: #161616; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow: hidden; height: 100vh; }
+        .container { max-width: 480px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
         .card { background: var(--card); padding: 16px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #282828; }
         
-        .header-box { text-align: center; margin-bottom: 10px; }
+        /* Header & Streak */
+        .header-box { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
         .app-title { color: var(--neon); margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px; }
-        
+        .streak-badge { background: #332200; color: var(--neon); padding: 4px 10px; border-radius: 20px; font-size: 14px; font-weight: 800; border: 1px solid var(--neon); display: flex; align-items: center; gap: 4px; }
+
         /* Buttons & SVGs */
         .btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
         button { background: var(--neon); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; flex: 1; }
         .btn-sec { background: #2a2a2a; color: white; }
-        .btn-icon { width: 44px; height: 44px; flex: none; padding: 0; }
-        svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
         /* Carousel */
-        .carousel { display: flex; overflow-x: auto; gap: 10px; padding: 10px 0; scrollbar-width: none; }
+        .carousel { display: flex; overflow-x: auto; gap: 10px; padding: 5px 0 15px 0; scrollbar-width: none; }
         .carousel::-webkit-scrollbar { display: none; }
-        .thumb-wrap { position: relative; width: 110px; height: 62px; border-radius: 10px; overflow: hidden; border: 2px solid transparent; background: #000; flex-shrink: 0; }
-        .selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 10px var(--neon); }
-        .dur-badge { position: absolute; bottom: 3px; right: 3px; background: rgba(0,0,0,0.8); font-size: 9px; padding: 2px 4px; border-radius: 3px; }
+        .carousel-item { flex: 0 0 110px; }
+        .thumb-wrap { position: relative; width: 110px; height: 62px; border-radius: 10px; overflow: hidden; border: 2.5px solid transparent; background: #000; }
+        .selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 12px var(--neon); }
+        .dur-badge { position: absolute; bottom: 3px; right: 3px; background: rgba(0,0,0,0.85); font-size: 9px; padding: 2px 4px; border-radius: 3px; font-weight: bold; }
 
         /* Calendar */
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; }
-        .cal-day { aspect-ratio: 1; border-radius: 8px; background: #1f1f1f; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .cal-day { aspect-ratio: 1; border-radius: 8px; background: #1f1f1f; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; }
         .cal-day.done { background: var(--neon); color: #000; font-weight: bold; }
+        .cal-day.today { border: 1px solid var(--neon); }
 
-        /* Maximized Workout Player */
-        .workout-ui { display: flex; flex-direction: column; height: 92vh; }
-        .player-container { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 15px; overflow: hidden; }
-        .controls-area { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        /* Player Optimization */
+        .workout-ui { display: flex; flex-direction: column; height: 100vh; position: fixed; inset: 0; background: #000; z-index: 1000; }
+        .player-frame { width: 100%; aspect-ratio: 16/9; background: #000; flex-shrink: 0; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .workout-info { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; padding: 20px; text-align: center; }
 
         /* Modals */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(8px); }
-        .modal { width: 100%; max-width: 400px; max-height: 85vh; overflow-y: auto; }
-        input, textarea { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(10px); }
+        .modal { width: 100%; max-width: 400px; padding: 20px; border-radius: 24px; }
+        input, textarea, select { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 12px; width: 100%; box-sizing: border-box; margin-bottom: 12px; font-size: 16px; }
+        label { font-size: 10px; color: var(--neon); font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 4px; }
         
-        /* Goal Splash */
-        .splash { position: fixed; inset: 0; background: var(--neon); color: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; animation: slideIn 0.5s ease; }
-        @keyframes slideIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .splash { position: fixed; inset: 0; background: var(--neon); color: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
 
         const Icons = {
             Back: () => <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
             Export: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>,
             Import: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>,
-            Edit: () => <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Fire: () => <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2c0 0-3.5 3.5-3.5 7.5s3.5 5.5 3.5 5.5s3.5-1.5 3.5-5.5S12 2 12 2z"/><path d="M12 22c3.866 0 7-3.134 7-7c0-1.5-.5-2.5-1.5-3.5c0 3-2 4.5-3.5 5.5s-2 2.5-2 5s.5 4 2 5z" opacity="0.5"/></svg>
         };
 
         const getLocalDateKey = (d = new Date()) => {
@@ -93,6 +93,27 @@
             const todayKey = getLocalDateKey();
             const todayMins = hist[todayKey]?.totalMins || 0;
 
+            // Calculate Streak
+            const streak = useMemo(() => {
+                let count = 0;
+                let checkDate = new Date();
+                while (true) {
+                    const k = getLocalDateKey(checkDate);
+                    if ((hist[k]?.totalMins || 0) >= goal) {
+                        count++;
+                        checkDate.setDate(checkDate.getDate() - 1);
+                    } else {
+                        // If it's today and not yet reached, don't break yet, check yesterday
+                        if (k === todayKey) {
+                            checkDate.setDate(checkDate.getDate() - 1);
+                            continue;
+                        }
+                        break;
+                    }
+                }
+                return count;
+            }, [hist, goal, todayKey]);
+
             useEffect(() => {
                 localStorage.setItem('d20_lib', JSON.stringify(lib));
                 localStorage.setItem('d20_hist', JSON.stringify(hist));
@@ -110,7 +131,13 @@
                     ticker = setInterval(() => {
                         accumRef.current += 1;
                         if (accumRef.current >= 60) {
-                            addMins(1);
+                            setHist(prev => ({
+                                ...prev,
+                                [todayKey]: { 
+                                    totalMins: (prev[todayKey]?.totalMins || 0) + 1, 
+                                    videos: prev[todayKey]?.videos || "" 
+                                }
+                            }));
                             accumRef.current = 0;
                         }
                         setWorkout(w => ({ ...w, secondsLeft: Math.max(0, w.secondsLeft - 1) }));
@@ -118,14 +145,6 @@
                 }
                 return () => clearInterval(ticker);
             }, [view, isPlaying, paused]);
-
-            const addMins = (m, title = "") => {
-                setHist(prev => {
-                    const ex = prev[todayKey] || { totalMins: 0, videos: "" };
-                    const newList = title && !ex.videos.includes(title) ? (ex.videos + (ex.videos ? "||" : "") + title) : ex.videos;
-                    return { ...prev, [todayKey]: { totalMins: ex.totalMins + m, videos: newList }};
-                });
-            };
 
             const getMeta = (url) => {
                 const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
@@ -139,19 +158,20 @@
                 <div className="container">
                     {showSplash && (
                         <div className="splash" onClick={() => setShowSplash(false)}>
-                            <h1 style={{fontSize: 60, margin: 0}}>🔥</h1>
-                            <h2 style={{fontSize: 32, fontWeight: 900}}>GOAL REACHED!</h2>
-                            <p>You smashed your {goal} minute target today.</p>
-                            <button className="btn-sec" style={{background:'#000', color: '#fff'}}>Continue</button>
+                            <div style={{fontSize: 80}}>🏆</div>
+                            <h1 style={{margin: '10px 0', fontWeight: 900}}>GOAL MET!</h1>
+                            <p style={{fontSize: 18}}>Streak: {streak} Days</p>
+                            <button className="btn-sec" style={{background:'#000', color: '#fff', marginTop:20}}>Awesome</button>
                         </div>
                     )}
 
                     <header className="header-box">
                         <h1 className="app-title">DAILY20</h1>
+                        {streak > 0 && <div className="streak-badge"><Icons.Fire /> {streak}</div>}
                     </header>
 
                     {view === 'home' && (
-                        <main>
+                        <div style={{display:'flex', flexDirection:'column', flex:1}}>
                             <div className="card">
                                 <label>Target Goal</label>
                                 <select value={goal} onChange={e => setGoal(parseInt(e.target.value))}>
@@ -169,7 +189,7 @@
                                     ))}
                                 </div>
 
-                                <button style={{marginTop:10}} disabled={lib.length === 0} onClick={() => {
+                                <button style={{marginTop:5}} disabled={lib.length === 0} onClick={() => {
                                     let pool = [...lib].sort(() => 0.5 - Math.random());
                                     if (selectedId) pool = [lib.find(x => x.id === selectedId), ...pool.filter(x => x.id !== selectedId)];
                                     const plan = pool.slice(0, 3);
@@ -183,69 +203,69 @@
                                 </div>
                             </div>
 
-                            <div className="card">
-                                <div style={{textAlign:'center', fontSize:28, fontWeight:900, marginBottom:10}}>{Math.floor(todayMins)}m / {goal}m</div>
+                            <div className="card" style={{flex:1, overflow:'hidden', display:'flex', flexDirection:'column'}}>
+                                <div style={{textAlign:'center', fontSize:32, fontWeight:900, marginBottom:10}}>{Math.floor(todayMins)} <small style={{fontSize:16, color:'var(--dim)'}}>/ {goal}m</small></div>
                                 <div className="cal-grid">
                                     {Array.from({length: 21}).map((_, i) => {
                                         const d = new Date(); d.setDate(d.getDate() - (20 - i));
                                         const k = getLocalDateKey(d);
                                         const m = hist[k]?.totalMins || 0;
                                         return (
-                                            <div key={k} className={`cal-day ${m >= goal ? 'done' : ''}`} onClick={() => setInspecting({key: k, date: d.toDateString(), m, txt: hist[k]?.videos || ""})}>
+                                            <div key={k} className={`cal-day ${m >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`} onClick={() => setInspecting({key: k, date: d.toDateString(), m, txt: hist[k]?.videos || ""})}>
                                                 {d.getDate()}
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
-                        </main>
+                        </div>
                     )}
 
                     {view === 'lib' && (
-                        <main>
+                        <div style={{height:'100%', overflowY:'auto'}}>
                             <div className="btn-row">
                                 <button className="btn-sec btn-icon" onClick={() => setView('home')}><Icons.Back /></button>
-                                <button className="btn-sec" onClick={() => {/*Export Logic*/}}><Icons.Export /> Export</button>
-                                <button className="btn-sec"><Icons.Import /> Import</button>
+                                <button className="btn-sec">Export</button>
+                                <button className="btn-sec">Import</button>
                             </div>
                             <div className="card">
-                                <h3 style={{margin:0}}>Video Library</h3>
                                 {lib.map(v => (
-                                    <div key={v.id} style={{display:'flex', alignItems:'center', gap:10, padding:'10px 0', borderBottom:'1px solid #333'}}>
-                                        <img src={getMeta(v.url).thumb} style={{width:60, borderRadius:5}} />
-                                        <div style={{flex:1, fontSize:13}}>{v.title}</div>
-                                        <button className="btn-sec btn-icon" style={{width:30, height:30}}><Icons.Edit /></button>
+                                    <div key={v.id} style={{display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:'1px solid #222'}}>
+                                        <img src={getMeta(v.url).thumb} style={{width:60, borderRadius:8}} />
+                                        <div style={{flex:1, fontSize:14}}>{v.title}</div>
+                                        <button className="btn-sec" style={{width:40, padding:8}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}>✕</button>
                                     </div>
                                 ))}
                             </div>
-                            <button onClick={() => {/*Add logic*/}}>+ Add New Video</button>
-                        </main>
+                        </div>
                     )}
 
                     {view === 'workout' && (
                         <div className="workout-ui">
-                            <div className="player-container">
+                            <div className="player-frame">
                                 {getMeta(workout.plan[workout.idx].url).type === 'yt' ? (
-                                    <iframe src={`https://www.youtube.com/embed/${getMeta(workout.plan[workout.idx].url).id}?autoplay=1&controls=1`} allow="autoplay"></iframe>
+                                    <iframe src={`https://www.youtube.com/embed/${getMeta(workout.plan[workout.idx].url).id}?autoplay=1&controls=1&modestbranding=1`} allow="autoplay"></iframe>
                                 ) : (
                                     <iframe src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowFullScreen></iframe>
                                 )}
                             </div>
-                            <div className="controls-area">
-                                <div style={{fontSize:60, fontWeight:900, color: 'var(--neon)'}}>
+                            <div className="workout-info">
+                                <div style={{fontSize:72, fontWeight:900, color: 'var(--neon)', fontVariantNumeric: 'tabular-nums'}}>
                                     {Math.floor(workout.secondsLeft/60)}:{(workout.secondsLeft%60).toString().padStart(2,'0')}
                                 </div>
-                                <h2 style={{margin:'10px 0'}}>{workout.plan[workout.idx].title}</h2>
-                                <div className="btn-row" style={{padding:'0 20px'}}>
-                                    <button onClick={() => setPaused(!paused)}>{paused ? 'Resume' : 'Pause'}</button>
-                                    <button className="btn-sec" onClick={() => {
-                                        if (workout.idx + 1 < workout.plan.length) {
-                                            const nxt = workout.idx + 1;
-                                            setWorkout({...workout, idx: nxt, secondsLeft: workout.plan[nxt].durSec});
-                                        } else { setView('home'); }
-                                    }}>Skip</button>
+                                <h2 style={{margin:0, fontSize:20}}>{workout.plan[workout.idx].title}</h2>
+                                <div style={{width:'100%'}}>
+                                    <div className="btn-row">
+                                        <button onClick={() => setPaused(!paused)}>{paused ? '▶ Resume' : '⏸ Pause'}</button>
+                                        <button className="btn-sec" onClick={() => {
+                                            if (workout.idx + 1 < workout.plan.length) {
+                                                const nxt = workout.idx + 1;
+                                                setWorkout({...workout, idx: nxt, secondsLeft: workout.plan[nxt].durSec});
+                                            } else { setView('home'); }
+                                        }}>Skip</button>
+                                    </div>
+                                    <button className="btn-sec" style={{marginTop:12, width:'100%'}} onClick={() => setView('home')}>🚪 Exit</button>
                                 </div>
-                                <button className="btn-sec" style={{marginTop:20, alignSelf:'center'}} onClick={() => setView('home')}>Exit</button>
                             </div>
                         </div>
                     )}
@@ -253,18 +273,26 @@
                     {offlineLog && (
                         <div className="overlay" onClick={() => setOfflineLog(false)}>
                             <div className="card modal" onClick={e => e.stopPropagation()}>
-                                <h3>Offline Training</h3>
+                                <h3 style={{marginTop:0}}>Manual Entry</h3>
                                 <form onSubmit={e => {
                                     e.preventDefault();
                                     const f = new FormData(e.target);
-                                    addMins(parseInt(f.get('m')), f.get('a'));
+                                    const m = parseInt(f.get('m'));
+                                    const a = f.get('a');
+                                    setHist(prev => ({
+                                        ...prev,
+                                        [todayKey]: { 
+                                            totalMins: (prev[todayKey]?.totalMins || 0) + m, 
+                                            videos: (prev[todayKey]?.videos || "") + (prev[todayKey]?.videos ? "||" : "") + a 
+                                        }
+                                    }));
                                     setOfflineLog(false);
                                 }}>
                                     <label>Activity</label>
                                     <input name="a" required placeholder="Running, Yoga..." />
                                     <label>Minutes</label>
                                     <input type="number" name="m" required />
-                                    <button type="submit">Log Minutes</button>
+                                    <button type="submit">Log Training</button>
                                 </form>
                             </div>
                         </div>
@@ -273,384 +301,18 @@
                     {inspecting && (
                         <div className="overlay" onClick={() => setInspecting(null)}>
                             <div className="card modal" onClick={e => e.stopPropagation()}>
-                                <h3>{inspecting.date}</h3>
-                                <label>Training Minutes</label>
+                                <h3 style={{marginTop:0}}>{inspecting.date}</h3>
+                                <label>Minutes Trained</label>
                                 <input type="number" value={inspecting.m} onChange={e => setInspecting({...inspecting, m: parseInt(e.target.value)||0})} />
-                                <label>Activities (use || to separate)</label>
-                                <textarea rows="4" value={inspecting.txt} onChange={e => setInspecting({...inspecting, txt: e.target.value})} />
-                                <div className="btn-row">
+                                <label>Logged Activities</label>
+                                <textarea rows="3" value={inspecting.txt} onChange={e => setInspecting({...inspecting, txt: e.target.value})} placeholder="Yoga||Pushups..." />
+                                <div className="btn-row" style={{marginTop:10}}>
                                     <button onClick={() => {
                                         setHist({...hist, [inspecting.key]: {totalMins: inspecting.m, videos: inspecting.txt}});
                                         setInspecting(null);
-                                    }}>Save History</button>
+                                    }}>💾 Save</button>
                                     <button className="btn-sec" onClick={() => setInspecting(null)}>Cancel</button>
                                 </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-    </script>
-</body>
-</html>, user-scalable=no">
-    <title>Daily20 Pro | v59</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <style>
-        :root { --bg: #121212; --card: #1e1e1e; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --success: #2ecc71; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
-        .card { background: var(--card); padding: 15px; border-radius: 18px; margin-bottom: 12px; border: 1px solid #333; position: relative; }
-        
-        .header-box { text-align: center; margin-bottom: 10px; }
-        .app-title { color: var(--neon); margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -1px; }
-        .v-tag { color: var(--dim); font-size: 10px; font-family: monospace; }
-
-        /* Unified SVG Button System */
-        .btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
-        button { background: var(--neon); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; flex: 1; transition: transform 0.1s; }
-        button:active { transform: scale(0.97); }
-        .btn-sec { background: #333; color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-icon { width: 44px; height: 44px; flex: none; padding: 0; }
-        svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-
-        /* Carousel */
-        .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scrollbar-width: none; }
-        .carousel::-webkit-scrollbar { display: none; }
-        .carousel-item { flex: 0 0 115px; text-align: center; }
-        .thumb-wrap { position: relative; width: 115px; height: 65px; border-radius: 10px; overflow: hidden; border: 2.5px solid transparent; background: #222; }
-        .carousel-thumb { width: 100%; height: 100%; object-fit: cover; }
-        .dur-badge { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.8); color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
-        .carousel-item.selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 15px rgba(255, 153, 0, 0.4); }
-
-        /* Calendar & Progress */
-        .progress-bg { width: 100%; height: 8px; background: #2a2a2a; border-radius: 4px; margin: 10px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--neon); transition: width 0.6s ease; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
-        .cal-day { aspect-ratio: 1; border-radius: 8px; background: #2a2a2a; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 1px solid transparent; }
-        .cal-day.done { background: var(--neon); color: black; font-weight: bold; }
-        .cal-day.today { border-color: var(--neon); }
-
-        /* Library & Search */
-        .search-input { margin-bottom: 12px; background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px 15px; border-radius: 10px; width: 100%; box-sizing: border-box; }
-        .lib-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #333; }
-        .list-thumb { width: 70px; height: 40px; border-radius: 6px; object-fit: cover; background: #000; flex-shrink: 0; }
-        .lib-info { flex: 1; min-width: 0; }
-        .lib-title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* Workout Player (Maximized Size Logic) */
-        .workout-layout { display: flex; flex-direction: column; height: calc(100vh - 40px); justify-content: flex-start; }
-        .player-frame { width: 100%; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 16/9; position: relative; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .workout-controls { flex: 1; padding: 10px 0; display: flex; flex-direction: column; justify-content: space-evenly; }
-
-        /* Modals */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(10px); }
-        .modal-big { width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; padding: 25px; }
-        input, select { background: #2a2a2a; border: 1px solid #444; color: white; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; margin-bottom: 12px; font-size: 15px; }
-        label { display: block; font-size: 10px; color: var(--neon); margin-bottom: 5px; font-weight: 800; text-transform: uppercase; }
-        .history-editor { background: #111; padding: 15px; border-radius: 12px; border: 1px solid #333; margin-bottom: 15px; }
-    </style>
-</head>
-<body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
-
-        const Icons = {
-            Back: () => <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
-            Export: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>,
-            Import: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>,
-            Delete: () => <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>,
-            Edit: () => <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        };
-
-        const getLocalDateKey = (d = new Date()) => {
-            const offset = d.getTimezoneOffset() * 60000;
-            return new Date(d.getTime() - offset).toISOString().split('T')[0];
-        };
-
-        const toSec = (str) => {
-            if (!str) return 0;
-            const p = str.toString().split(':');
-            return p.length > 1 ? (parseInt(p[0]) * 60) + parseInt(p[1]) : parseInt(str) || 0;
-        };
-
-        const fromSec = (s) => {
-            const m = Math.floor(s / 60);
-            const r = s % 60;
-            return `${m}:${r.toString().padStart(2, '0')}`;
-        };
-
-        const getMeta = (url) => {
-            const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
-            if (yt) return { type: 'yt', id: yt[1], thumb: `https://img.youtube.com/vi/${yt[1]}/mqdefault.jpg` };
-            const ig = url.match(/(?:instagram\.com\/(?:p|reels|reel)\/)([^/?#&]+)/);
-            if (ig) return { type: 'ig', id: ig[1], thumb: `https://images.weserv.nl/?url=www.instagram.com/p/${ig[1]}/media/?size=m` };
-            return { type: 'web', id: null, thumb: 'https://placehold.co/120x80/222/ff9900?text=Video' };
-        };
-
-        const App = () => {
-            const [view, setView] = useState('home');
-            const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_lib')) || []);
-            const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist')) || {});
-            const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_goal')) || 20);
-            
-            const [search, setSearch] = useState("");
-            const [selectedId, setSelectedId] = useState(null);
-            const [editing, setEditing] = useState(null);
-            const [inspecting, setInspecting] = useState(null);
-            
-            const [workout, setWorkout] = useState({ plan: [], idx: 0, secondsLeft: 0 });
-            const [isPlaying, setIsPlaying] = useState(false);
-            const [paused, setPaused] = useState(false);
-            const playerRef = useRef(null);
-            const accumRef = useRef(0);
-
-            const todayKey = getLocalDateKey();
-            const todayMins = hist[todayKey]?.totalMins || 0;
-            const progress = Math.min(100, (todayMins / goal) * 100);
-
-            useEffect(() => {
-                localStorage.setItem('d20_lib', JSON.stringify(lib));
-                localStorage.setItem('d20_hist', JSON.stringify(hist));
-                localStorage.setItem('d20_goal', goal.toString());
-            }, [lib, hist, goal]);
-
-            useEffect(() => {
-                let ticker;
-                if (view === 'workout' && isPlaying && !paused) {
-                    ticker = setInterval(() => {
-                        accumRef.current += 1;
-                        if (accumRef.current >= 60) {
-                            updateDayMinutes(todayKey, (hist[todayKey]?.totalMins || 0) + 1);
-                            accumRef.current = 0;
-                        }
-                        setWorkout(w => ({ ...w, secondsLeft: Math.max(0, w.secondsLeft - 1) }));
-                    }, 1000);
-                }
-                return () => clearInterval(ticker);
-            }, [view, isPlaying, paused]);
-
-            const updateDayMinutes = (key, val) => {
-                setHist(prev => ({ ...prev, [key]: { ...prev[key], totalMins: val } }));
-            };
-
-            const handleNext = () => {
-                if (workout.idx + 1 < workout.plan.length) {
-                    const nxt = workout.idx + 1;
-                    const v = workout.plan[nxt];
-                    setWorkout({ ...workout, idx: nxt, secondsLeft: v.durSec - (v.startSec || 0) });
-                } else { setView('home'); }
-            };
-
-            useEffect(() => {
-                if (view === 'workout') {
-                    const v = workout.plan[workout.idx];
-                    const meta = getMeta(v.url);
-                    if (meta.type === 'yt') {
-                        if (playerRef.current?.destroy) playerRef.current.destroy();
-                        playerRef.current = new window.YT.Player('yt-player', {
-                            videoId: meta.id,
-                            playerVars: { autoplay: 1, start: v.startSec || 0, controls: 1, rel: 0, modestbranding: 1 },
-                            events: { onStateChange: (e) => setIsPlaying(e.data === 1) }
-                        });
-                    } else { setIsPlaying(true); }
-                }
-            }, [view, workout.idx]);
-
-            const filteredLib = useMemo(() => 
-                lib.filter(v => v.title.toLowerCase().includes(search.toLowerCase())), [lib, search]);
-
-            return (
-                <div className="container">
-                    <header className="header-box">
-                        <h1 className="app-title">DAILY20</h1>
-                        <span className="v-tag">VERSION 59.0</span>
-                    </header>
-
-                    {view === 'home' && (
-                        <main>
-                            <div className="card">
-                                <label>Target Goal</label>
-                                <select value={goal} onChange={e => setGoal(parseInt(e.target.value))}>
-                                    {[10, 20, 30, 45, 60, 90].map(g => <option key={g} value={g}>{g} Minutes</option>)}
-                                </select>
-                                
-                                <label>Pick for Session</label>
-                                <div className="carousel">
-                                    {lib.map(v => (
-                                        <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id === selectedId ? null : v.id)}>
-                                            <div className="thumb-wrap">
-                                                <img className="carousel-thumb" src={getMeta(v.url).thumb} />
-                                                <div className="dur-badge">{fromSec(v.durSec - (v.startSec || 0))}</div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <button style={{marginTop:15}} disabled={lib.length === 0} onClick={() => {
-                                    let pool = [...lib].sort(() => 0.5 - Math.random());
-                                    if (selectedId) pool = [lib.find(x => x.id === selectedId), ...pool.filter(x => x.id !== selectedId)];
-                                    const plan = pool.slice(0, 4);
-                                    setWorkout({ plan, idx: 0, secondsLeft: plan[0].durSec - (plan[0].startSec || 0) });
-                                    accumRef.current = 0; setView('workout');
-                                }}>Start Training</button>
-                                
-                                <div className="progress-bg"><div className="progress-fill" style={{width: `${progress}%`}}></div></div>
-                                
-                                <div className="btn-row">
-                                    <button className="btn-sec" onClick={() => setView('lib')}>Library</button>
-                                    <button className="btn-sec" onClick={() => {
-                                        const key = getLocalDateKey();
-                                        setInspecting({ key, date: new Date().toDateString(), editMins: hist[key]?.totalMins || 0 });
-                                    }}>Calendar</button>
-                                </div>
-                            </div>
-
-                            <div className="card" style={{textAlign:'center'}}>
-                                <div style={{fontSize:32, fontWeight:900}}>{Math.floor(todayMins)} <span style={{fontSize:16, color:'var(--dim)'}}>/ {goal}m</span></div>
-                                <div className="cal-grid">
-                                    {Array.from({length: 21}).map((_, i) => {
-                                        const d = new Date(); d.setDate(d.getDate() - (20 - i));
-                                        const k = getLocalDateKey(d);
-                                        const m = hist[k]?.totalMins || 0;
-                                        return (
-                                            <div key={k} className={`cal-day ${m >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`} onClick={() => setInspecting({key: k, date: d.toDateString(), editMins: m})}>
-                                                {d.getDate()}<b style={{fontSize:8}}>{Math.floor(m)}m</b>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </main>
-                    )}
-
-                    {view === 'lib' && (
-                        <main>
-                            <div className="btn-row">
-                                <button className="btn-sec btn-icon" onClick={() => setView('home')}><Icons.Back /></button>
-                                <button className="btn-sec" onClick={() => {
-                                    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ lib, hist, goal })], { type: 'application/json' }));
-                                    a.download = `Daily20_Backup.json`; a.click();
-                                }}><Icons.Export /> Export</button>
-                                <button className="btn-sec" style={{position:'relative'}}>
-                                    <Icons.Import /> Import <input type="file" onChange={e => {
-                                        const reader = new FileReader();
-                                        reader.onload = (ev) => {
-                                            const d = JSON.parse(ev.target.result);
-                                            if (d.lib) setLib(d.lib); if (d.hist) setHist(d.hist);
-                                        }; reader.readAsText(e.target.files[0]);
-                                    }} style={{position:'absolute', inset:0, opacity:0}} />
-                                </button>
-                            </div>
-
-                            <input className="search-input" placeholder="Search library..." value={search} onChange={e => setSearch(e.target.value)} />
-
-                            <form className="card" onSubmit={e => {
-                                e.preventDefault(); const f = new FormData(e.target);
-                                setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), durSec: toSec(f.get('d')), startSec: toSec(f.get('s')) }, ...lib]);
-                                e.target.reset();
-                            }}>
-                                <label>New Video</label>
-                                <input name="t" required placeholder="Title" />
-                                <input name="u" required placeholder="URL" />
-                                <div className="btn-row">
-                                    <input name="s" placeholder="Start (0:00)" />
-                                    <input name="d" required placeholder="End (m:s)" />
-                                </div>
-                                <button type="submit">Add to Library</button>
-                            </form>
-
-                            <div className="card">
-                                {filteredLib.map(v => (
-                                    <div key={v.id} className="lib-item">
-                                        <img src={getMeta(v.url).thumb} className="list-thumb" />
-                                        <div className="lib-info">
-                                            <div className="lib-title">{v.title}</div>
-                                            <div className="lib-dur" style={{fontSize:10, color:'var(--dim)'}}>{fromSec(v.durSec - (v.startSec || 0))}</div>
-                                        </div>
-                                        <button className="btn-sec btn-icon" onClick={() => setEditing({...v, sStr: fromSec(v.startSec || 0), dStr: fromSec(v.durSec)})}><Icons.Edit /></button>
-                                        <button className="btn-danger btn-icon" onClick={() => setLib(lib.filter(x => x.id !== v.id))}><Icons.Delete /></button>
-                                    </div>
-                                ))}
-                            </div>
-                        </main>
-                    )}
-
-                    {view === 'workout' && (
-                        <main className="workout-layout">
-                            <div className="player-frame">
-                                {getMeta(workout.plan[workout.idx].url).type === 'yt' ? (
-                                    <div id="yt-player"></div>
-                                ) : (
-                                    <iframe src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowFullScreen></iframe>
-                                )}
-                            </div>
-                            <div className="workout-controls">
-                                <div style={{textAlign:'center'}}>
-                                    <div style={{fontSize:58, fontWeight:900, color:'var(--neon)', lineHeight:1}}>{fromSec(workout.secondsLeft)}</div>
-                                    <h2 style={{margin:'15px 0', fontSize:18}}>{workout.plan[workout.idx].title}</h2>
-                                </div>
-                                <div>
-                                    <div className="btn-row">
-                                        <button onClick={() => setPaused(!paused)}>{paused ? '▶ Resume' : '⏸ Pause'}</button>
-                                        <button className="btn-sec" onClick={handleNext}>⏭ Skip</button>
-                                    </div>
-                                    <button className="btn-sec" style={{marginTop:10}} onClick={() => { if(playerRef.current?.destroy) playerRef.current.destroy(); setView('home'); }}>🚪 Exit Workout</button>
-                                </div>
-                            </div>
-                        </main>
-                    )}
-
-                    {/* MODALS */}
-                    {inspecting && (
-                        <div className="overlay" onClick={() => setInspecting(null)}>
-                            <div className="card modal-big" onClick={e => e.stopPropagation()}>
-                                <h2 style={{marginTop:0, color:'var(--neon)'}}>{inspecting.date}</h2>
-                                
-                                <div className="history-editor">
-                                    <label>Total Training Minutes</label>
-                                    <input type="number" value={inspecting.editMins} onChange={e => setInspecting({...inspecting, editMins: parseInt(e.target.value) || 0})} />
-                                    <p style={{fontSize:11, color:'var(--dim)'}}>Manual overrides allow you to correct tracking errors or add offline work.</p>
-                                </div>
-
-                                <label>Logged Activities</label>
-                                <div style={{background:'#000', padding:10, borderRadius:8, fontSize:13, minHeight:60, marginBottom:20}}>
-                                    {hist[inspecting.key]?.videos?.split('||').map((v, i) => <div key={i} style={{padding:'4px 0', borderBottom:'1px solid #222'}}>🔥 {v}</div>) || "No activity names logged."}
-                                </div>
-
-                                <div className="btn-row">
-                                    <button onClick={() => { updateDayMinutes(inspecting.key, inspecting.editMins); setInspecting(null); }}>💾 Save Changes</button>
-                                    <button className="btn-sec" onClick={() => setInspecting(null)}>Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {editing && (
-                        <div className="overlay">
-                            <div className="card modal-big">
-                                <h3>Edit Video Details</h3>
-                                <label>Title</label>
-                                <input value={editing.title} onChange={e => setEditing({...editing, title: e.target.value})} />
-                                <label>URL</label>
-                                <input value={editing.url} onChange={e => setEditing({...editing, url: e.target.value})} />
-                                <div className="btn-row">
-                                    <div style={{flex:1}}><label>Start</label><input value={editing.sStr} onChange={e => setEditing({...editing, sStr: e.target.value})} /></div>
-                                    <div style={{flex:1}}><label>End</label><input value={editing.dStr} onChange={e => setEditing({...editing, dStr: e.target.value})} /></div>
-                                </div>
-                                <button style={{marginTop:10}} onClick={() => {
-                                    setLib(lib.map(x => x.id === editing.id ? { ...editing, startSec: toSec(editing.sStr), durSec: toSec(editing.dStr) } : x));
-                                    setEditing(null);
-                                }}>Save Changes</button>
-                                <button className="btn-sec" style={{marginTop:10}} onClick={() => setEditing(null)}>Cancel</button>
                             </div>
                         </div>
                     )}
