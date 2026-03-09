@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v51.1</title>
+    <title>Daily20 Pro | v53</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,9 +14,9 @@
         .container { max-width: 500px; margin: 0 auto; padding-bottom: 50px; }
         .card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid #333; }
         
-        /* Header & Versioning */
-        .app-title { color: var(--neon); margin: 0; display: inline-block; letter-spacing: 1.5px; }
-        .version-tag { color: var(--dim); font-size: 10px; font-weight: normal; margin-left: 8px; vertical-align: middle; font-family: monospace; }
+        .header-container { text-align: center; margin-bottom: 15px; display: flex; align-items: baseline; justify-content: center; gap: 8px; }
+        .app-title { color: var(--neon); margin: 0; letter-spacing: 1.5px; }
+        .version-tag { color: var(--dim); font-size: 10px; font-weight: normal; font-family: monospace; }
 
         label { display: block; font-size: 11px; color: var(--neon); margin-bottom: 4px; font-weight: bold; text-transform: uppercase; }
         input, textarea { background: #2a2a2a; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 14px; margin-bottom: 12px; }
@@ -27,25 +27,24 @@
 
         .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px; scrollbar-width: none; }
         .carousel-item { flex: 0 0 115px; text-align: center; cursor: pointer; }
-        .thumb-wrap { position: relative; width: 115px; height: 65px; border-radius: 10px; overflow: hidden; border: 2px solid transparent; transition: all 0.2s ease; }
+        .thumb-wrap { position: relative; width: 115px; height: 65px; border-radius: 10px; overflow: hidden; border: 2px solid transparent; }
         .carousel-thumb { width: 100%; height: 100%; object-fit: cover; }
-        .dur-badge { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.85); color: white; font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 4px; }
+        .dur-badge { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.85); color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; }
         .carousel-item.selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 15px rgba(255, 153, 0, 0.4); }
 
         .progress-bg { width: 100%; height: 10px; background: #2a2a2a; border-radius: 5px; margin-top: 12px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--neon); transition: width 0.8s ease; }
         .progress-fill.full { background: var(--success); box-shadow: 0 0 10px var(--success); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
         .streak-badge { background: linear-gradient(45deg, #ff4500, #ff9900); color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 900; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; }
-
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; }
         .cal-day { aspect-ratio: 1; border-radius: 6px; background: #2a2a2a; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
         .cal-day.done { background: var(--neon); color: black; font-weight: bold; }
         .cal-day.today { border: 1px solid var(--neon); }
 
         .player-frame { width: 100%; background: #000; border-radius: 16px; overflow: hidden; position: relative; aspect-ratio: 16/9; margin-bottom: 12px; }
-        #yt-player, .player-frame iframe { width: 100% !important; height: 100% !important; position: absolute; top: 0; }
+        #yt-player, iframe { width: 100% !important; height: 100% !important; position: absolute; top: 0; }
         
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .confetti { position: absolute; width: 8px; height: 8px; animation: fall 3s linear forwards; pointer-events: none; }
@@ -83,7 +82,6 @@
             const todayMins = hist[todayKey]?.totalMins || 0;
             const progressPct = Math.min(100, Math.round((todayMins / goal) * 100));
 
-            // Streak Logic (Stable v51 Version)
             const streak = useMemo(() => {
                 let count = 0; let d = new Date();
                 while (true) {
@@ -125,6 +123,7 @@
                     setWorkout(w => ({ ...w, idx: nxt, seconds: w.plan[nxt].durSec - (w.plan[nxt].startSec || 0) }));
                 } else {
                     setView('home');
+                    if (playerRef.current) playerRef.current.destroy();
                 }
             };
 
@@ -159,9 +158,9 @@
                         <div key={i} className="confetti" style={{left: Math.random()*100+'vw', animationDelay: Math.random()*2+'s', backgroundColor: ['#ff9900','#2ecc71','#fff'][Math.floor(Math.random()*3)]}} />
                     ))}
                     
-                    <header style={{textAlign:'center', marginBottom:15}}>
+                    <header className="header-container">
                         <h1 className="app-title">DAILY20</h1>
-                        <span className="version-tag">v51.1</span>
+                        <span className="version-tag">v53</span>
                     </header>
 
                     {view === 'home' && (
@@ -178,7 +177,6 @@
                                         </div>
                                     ))}
                                 </div>
-
                                 <button style={{marginTop:15}} disabled={lib.length === 0} onClick={() => {
                                     let pool = [...lib].sort(() => 0.5 - Math.random());
                                     if (selectedId) pool = [lib.find(x => x.id === selectedId), ...pool.filter(x => x.id !== selectedId)];
@@ -186,9 +184,7 @@
                                     setWorkout({ plan, idx: 0, seconds: plan[0].durSec - (plan[0].startSec || 0) });
                                     setView('workout');
                                 }}>Start Training</button>
-
                                 <div className="progress-bg"><div className={`progress-fill ${progressPct >= 100 ? 'full' : ''}`} style={{width: `${progressPct}%`}}></div></div>
-                                
                                 <div style={{display:'flex', gap:10, marginTop:15}}>
                                     <button className="btn-sec" style={{flex:1, marginTop:0}} onClick={() => setShowOfflineLog(true)}>+ Offline</button>
                                     <button className="btn-sec" style={{flex:1, marginTop:0}} onClick={() => setView('lib')}>Library</button>
@@ -202,10 +198,7 @@
                                     {Array.from({length:28}).map((_, i) => {
                                         const d = new Date(); d.setDate(d.getDate() - (27 - i));
                                         const k = getLocalDateKey(d);
-                                        return <div key={k} className={`cal-day ${(hist[k]?.totalMins || 0) >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`} onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>
-                                            {d.getDate()}
-                                            <small style={{fontSize:7}}>{hist[k]?.totalMins || 0}m</small>
-                                        </div>
+                                        return <div key={k} className={`cal-day ${(hist[k]?.totalMins || 0) >= goal ? 'done' : ''} ${k === todayKey ? 'today' : ''}`} onClick={() => setInspectingDate({full: d.toDateString(), key: k})}>{d.getDate()}<small style={{fontSize:7}}>{hist[k]?.totalMins || 0}m</small></div>
                                     })}
                                 </div>
                             </div>
@@ -217,14 +210,14 @@
                             <button className="btn-sec" onClick={() => setView('home')}>Back</button>
                             <form className="card" style={{marginTop:15}} onSubmit={e => {
                                 e.preventDefault(); const f = new FormData(e.target);
-                                const toS = (str) => { const parts = str.split(':'); return parts.length > 1 ? (parseInt(parts[0])*60)+parseInt(parts[1]) : parseInt(str) || 0; };
+                                const toS = (str) => { const p = str.split(':'); return p.length > 1 ? (parseInt(p[0])*60)+parseInt(p[1]) : parseInt(str) || 0; };
                                 setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), durSec: toS(f.get('d')), startSec: toS(f.get('s')) }, ...lib]);
                                 e.target.reset();
                             }}>
                                 <label>Add Video</label>
                                 <input name="t" required placeholder="Title" /><input name="u" required placeholder="URL" />
                                 <div style={{display:'flex', gap:10}}><input name="s" placeholder="Start (m:s)" style={{flex:1}}/><input name="d" required placeholder="End (m:s)" style={{flex:1}}/></div>
-                                <button type="submit">Add to Library</button>
+                                <button type="submit">Add</button>
                             </form>
                             <div className="card">
                                 {lib.map(v => (
@@ -247,7 +240,6 @@
                                     <button onClick={() => setPaused(!paused)}>{paused ? 'Resume' : 'Pause'}</button>
                                     <button className="btn-sec" onClick={handleNext}>Skip</button>
                                 </div>
-                                <button className="btn-sec" onClick={() => setView('home')} style={{marginTop:10}}>Exit</button>
                             </div>
                         </main>
                     )}
@@ -273,7 +265,7 @@
                             <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
                                 <h3>{inspectingDate.full}</h3>
                                 <div style={{fontSize:24, fontWeight:900}}>{hist[inspectingDate.key]?.totalMins || 0}m</div>
-                                <p style={{fontSize:12, color:'var(--dim)'}}>{hist[inspectingDate.key]?.videos || "No training data"}</p>
+                                <p style={{fontSize:12, color:'var(--dim)'}}>{hist[inspectingDate.key]?.videos || "No data"}</p>
                                 <button className="btn-sec" onClick={() => setInspectingDate(null)}>Close</button>
                             </div>
                         </div>
