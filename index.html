@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v66</title>
+    <title>Daily20 Pro | v67</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -21,13 +21,14 @@
 
         /* Buttons & Icons */
         .btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
-        button { background: var(--neon); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; flex: 1; }
+        button { background: var(--neon); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; flex: 1; }
         .btn-sec { background: #2a2a2a; color: white; }
-        .btn-icon { width: 44px; height: 44px; flex: none; padding: 0; }
-        svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        .btn-neon-ghost { background: #2a2a2a; color: var(--neon); }
+        .btn-icon { width: 40px; height: 40px; flex: none; padding: 0; }
+        svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 
         /* Modals & Inputs */
-        input, select, textarea { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 12px; font-family: inherit; }
+        input, select, textarea { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
         label { font-size: 10px; font-weight: 800; color: var(--neon); text-transform: uppercase; margin-bottom: 4px; display: block; }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 15px; }
 
@@ -49,6 +50,7 @@
         .carousel::-webkit-scrollbar { display: none; }
         .thumb-wrap { position: relative; width: 110px; height: 62px; border-radius: 10px; overflow: hidden; border: 2.5px solid transparent; background: #000; flex-shrink: 0; }
         .selected .thumb-wrap { border-color: var(--neon); box-shadow: 0 0 10px var(--neon); }
+        .dur-badge { position: absolute; bottom: 4px; right: 4px; font-size: 10px; font-weight: 700; background: rgba(0,0,0,0.85); padding: 2px 5px; border-radius: 4px; color: var(--neon); }
     </style>
 </head>
 <body>
@@ -62,12 +64,25 @@
             Export: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>,
             Import: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>,
             Edit: () => <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+            Trash: () => <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+            Search: () => <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
             Fire: () => <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2c0 0-3.5 3.5-3.5 7.5s3.5 5.5 3.5 5.5s3.5-1.5 3.5-5.5S12 2 12 2z"/><path d="M12 22c3.866 0 7-3.134 7-7c0-1.5-.5-2.5-1.5-3.5c0 3-2 4.5-3.5 5.5s-2 2.5-2 5s.5 4 2 5z" opacity="0.5"/></svg>
         };
 
         const getLocalDateKey = (d = new Date()) => {
             const offset = d.getTimezoneOffset() * 60000;
             return new Date(d.getTime() - offset).toISOString().split('T')[0];
+        };
+
+        const parseTime = (str) => {
+            if (!str) return 0;
+            const p = str.split(':');
+            return (parseInt(p[0]) * 60) + (parseInt(p[1]) || 0);
+        };
+
+        const formatTime = (secs) => {
+            if (!secs) return "0:00";
+            return `${Math.floor(secs/60)}:${(secs%60).toString().padStart(2,'0')}`;
         };
 
         const App = () => {
@@ -78,8 +93,8 @@
             
             const [selectedId, setSelectedId] = useState(null);
             const [inspecting, setInspecting] = useState(null);
-            const [showAdd, setShowAdd] = useState(false);
             const [editItem, setEditItem] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
             
             const [workout, setWorkout] = useState({ plan: [], idx: 0, secondsLeft: 0 });
             const [isPlaying, setIsPlaying] = useState(false);
@@ -128,11 +143,27 @@
                 return { type: 'web', id: null, thumb: 'https://placehold.co/100x60/222/ff9900?text=VIDEO' };
             };
 
+            const handleAdd = (e) => {
+                e.preventDefault();
+                const f = new FormData(e.target);
+                const newItem = {
+                    id: Date.now(),
+                    title: f.get('t'),
+                    url: f.get('u'),
+                    durSec: parseTime(f.get('d')),
+                    startSec: parseTime(f.get('s'))
+                };
+                setLib([newItem, ...lib]);
+                e.target.reset();
+            };
+
+            const filteredLib = lib.filter(v => v.title.toLowerCase().includes(searchQuery.toLowerCase()));
+
             return (
                 <div className="container">
                     <header className="header-box">
                         <h1 className="app-title">DAILY20</h1>
-                        <span className="v-tag">VERSION 66.0</span>
+                        <span className="v-tag">VERSION 67.0</span>
                     </header>
 
                     {view === 'home' && (
@@ -148,9 +179,7 @@
                                         <div key={v.id} className={`carousel-item ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id === selectedId ? null : v.id)}>
                                             <div className="thumb-wrap">
                                                 <img src={getMeta(v.url).thumb} style={{width:'100%', height:'100%', objectFit:'cover'}} />
-                                                <div style={{position:'absolute', bottom:2, right:2, fontSize:9, background:'rgba(0,0,0,0.8)', padding:'2px 4px', borderRadius:3}}>
-                                                    {Math.floor(v.durSec/60)}m
-                                                </div>
+                                                <div className="dur-badge">{formatTime(v.durSec)}</div>
                                             </div>
                                         </div>
                                     ))}
@@ -192,34 +221,84 @@
 
                     {view === 'lib' && (
                         <main style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
+                            {/* Top Neon Nav */}
                             <div className="btn-row">
-                                <button className="btn-sec btn-icon" onClick={() => setView('home')}><Icons.Back /></button>
-                                <button className="btn-sec"><Icons.Export /> Export</button>
-                                <button className="btn-sec"><Icons.Import /> Import</button>
+                                <button className="btn-neon-ghost btn-icon" onClick={() => setView('home')}><Icons.Back /></button>
+                                <button className="btn-neon-ghost"><Icons.Export /> Export</button>
+                                <button className="btn-neon-ghost"><Icons.Import /> Import</button>
                             </div>
-                            <div className="card" style={{flex: 1, overflowY: 'auto', marginBottom: 12}}>
-                                <h3 style={{margin: '0 0 10px 0'}}>Video Library</h3>
-                                {lib.map(v => (
-                                    <div key={v.id} style={{display:'flex', alignItems:'center', gap:10, padding:'10px 0', borderBottom:'1px solid #333'}}>
-                                        <img src={getMeta(v.url).thumb} style={{width:60, height:34, objectFit:'cover', borderRadius:5}} />
-                                        <div style={{flex:1, fontSize:13, fontWeight:700}}>{v.title}</div>
-                                        <button className="btn-sec btn-icon" style={{width:30, height:30, padding:0}} onClick={() => setEditItem(v)}><Icons.Edit /></button>
+
+                            {/* Restored Inline Add Form */}
+                            <form className="card" onSubmit={handleAdd} style={{marginBottom: 12}}>
+                                <label>Add New Video</label>
+                                <input name="t" placeholder="Title (e.g., Core Crusher)" required />
+                                <input name="u" placeholder="YouTube or Instagram URL" required />
+                                <div style={{display:'flex', gap:8}}>
+                                    <div style={{flex:1}}>
+                                        <label>Duration</label>
+                                        <input name="d" placeholder="Min:Sec" required style={{marginBottom:0}}/>
                                     </div>
-                                ))}
-                                {lib.length === 0 && <div style={{color:'var(--dim)', fontSize:13, marginTop:10}}>Library is empty.</div>}
+                                    <div style={{flex:1}}>
+                                        <label>Start At</label>
+                                        <input name="s" placeholder="0:00" defaultValue="0:00" style={{marginBottom:0}}/>
+                                    </div>
+                                </div>
+                                <button type="submit" style={{marginTop: 10, width: '100%'}}>Save Video</button>
+                            </form>
+
+                            {/* Search and Library List */}
+                            <div className="card" style={{flex: 1, overflowY: 'auto', marginBottom: 12, display:'flex', flexDirection:'column'}}>
+                                <div style={{position:'relative', marginBottom: 10}}>
+                                    <div style={{position:'absolute', left:12, top:12, color:'var(--dim)'}}><Icons.Search /></div>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search videos..." 
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        style={{paddingLeft: 40, marginBottom: 0}}
+                                    />
+                                </div>
+                                
+                                <div style={{flex:1, overflowY:'auto'}}>
+                                    {filteredLib.map(v => (
+                                        <div key={v.id} style={{display:'flex', alignItems:'center', gap:10, padding:'12px 0', borderBottom:'1px solid #222'}}>
+                                            <div style={{position:'relative', flexShrink:0}}>
+                                                <img src={getMeta(v.url).thumb} style={{width:75, height:42, objectFit:'cover', borderRadius:6}} />
+                                                <div className="dur-badge" style={{bottom:2, right:2, fontSize:8}}>{formatTime(v.durSec)}</div>
+                                            </div>
+                                            
+                                            <div style={{flex:1, minWidth:0}}>
+                                                <div style={{fontSize:13, fontWeight:700, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{v.title}</div>
+                                                {v.startSec > 0 && <div style={{fontSize:10, color:'var(--dim)'}}>Starts @ {formatTime(v.startSec)}</div>}
+                                            </div>
+                                            
+                                            <div style={{display:'flex', gap:4}}>
+                                                <button className="btn-sec btn-icon" onClick={() => setEditItem(v)}><Icons.Edit /></button>
+                                                <button className="btn-sec btn-icon" style={{color:'var(--danger)'}} onClick={() => {
+                                                    if(confirm('Delete this video?')) setLib(lib.filter(x => x.id !== v.id));
+                                                }}><Icons.Trash /></button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {filteredLib.length === 0 && <div style={{color:'var(--dim)', fontSize:13, marginTop:10, textAlign:'center'}}>No videos found.</div>}
+                                </div>
                             </div>
-                            <button onClick={() => setShowAdd(true)}>+ Add New Video</button>
                         </main>
                     )}
 
                     {view === 'workout' && (
                         <div className="workout-ui">
                             <div className="player-frame">
-                                {getMeta(workout.plan[workout.idx].url).type === 'yt' ? (
-                                    <iframe src={`https://www.youtube.com/embed/${getMeta(workout.plan[workout.idx].url).id}?autoplay=1&controls=1&modestbranding=1&rel=0`} allow="autoplay"></iframe>
-                                ) : (
-                                    <iframe src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowFullScreen></iframe>
-                                )}
+                                {(() => {
+                                    const meta = getMeta(workout.plan[workout.idx].url);
+                                    const startParam = workout.plan[workout.idx].startSec > 0 ? `&start=${workout.plan[workout.idx].startSec}` : '';
+                                    
+                                    if (meta.type === 'yt') {
+                                        return <iframe src={`https://www.youtube.com/embed/${meta.id}?autoplay=1&controls=1&modestbranding=1&rel=0${startParam}`} allow="autoplay"></iframe>;
+                                    } else {
+                                        return <iframe src={`${workout.plan[workout.idx].url.split('?')[0]}embed`} allowFullScreen></iframe>;
+                                    }
+                                })()}
                             </div>
                             <div className="workout-footer">
                                 <div className="timer-display">
@@ -240,34 +319,7 @@
                         </div>
                     )}
 
-                    {/* Modals */}
-                    {showAdd && (
-                        <div className="overlay" onClick={() => setShowAdd(false)}>
-                            <div className="card" style={{width:'90%', maxWidth:350}} onClick={e => e.stopPropagation()}>
-                                <h3 style={{marginTop:0}}>Add New Video</h3>
-                                <form onSubmit={e => {
-                                    e.preventDefault();
-                                    const f = new FormData(e.target);
-                                    const durParts = f.get('d').split(':');
-                                    const totalSeconds = (parseInt(durParts[0]) * 60) + (parseInt(durParts[1]) || 0);
-                                    setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u'), durSec: totalSeconds }, ...lib]);
-                                    setShowAdd(false);
-                                }}>
-                                    <label>Video Title</label>
-                                    <input name="t" required placeholder="Morning Yoga" />
-                                    <label>URL (YouTube/Instagram)</label>
-                                    <input name="u" required />
-                                    <label>Duration (Min:Sec)</label>
-                                    <input name="d" required placeholder="15:00" />
-                                    <div className="btn-row" style={{marginTop:10}}>
-                                        <button type="submit">Save Video</button>
-                                        <button type="button" className="btn-sec" onClick={() => setShowAdd(false)}>Cancel</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
+                    {/* Edit Modal */}
                     {editItem && (
                         <div className="overlay" onClick={() => setEditItem(null)}>
                             <div className="card" style={{width:'90%', maxWidth:350}} onClick={e => e.stopPropagation()}>
@@ -275,23 +327,33 @@
                                 <form onSubmit={e => {
                                     e.preventDefault();
                                     const f = new FormData(e.target);
-                                    const durParts = f.get('d').split(':');
-                                    const totalSeconds = (parseInt(durParts[0]) * 60) + (parseInt(durParts[1]) || 0);
-                                    setLib(lib.map(x => x.id === editItem.id ? { ...x, title: f.get('t'), url: f.get('u'), durSec: totalSeconds } : x));
+                                    setLib(lib.map(x => x.id === editItem.id ? { 
+                                        ...x, 
+                                        title: f.get('t'), 
+                                        url: f.get('u'), 
+                                        durSec: parseTime(f.get('d')),
+                                        startSec: parseTime(f.get('s'))
+                                    } : x));
                                     setEditItem(null);
                                 }}>
                                     <label>Title</label>
                                     <input name="t" defaultValue={editItem.title} required />
                                     <label>URL</label>
                                     <input name="u" defaultValue={editItem.url} required />
-                                    <label>Duration (Min:Sec)</label>
-                                    <input name="d" defaultValue={`${Math.floor(editItem.durSec/60)}:${(editItem.durSec%60).toString().padStart(2,'0')}`} required />
+                                    
+                                    <div style={{display:'flex', gap:8}}>
+                                        <div style={{flex:1}}>
+                                            <label>Duration (Min:Sec)</label>
+                                            <input name="d" defaultValue={formatTime(editItem.durSec)} required />
+                                        </div>
+                                        <div style={{flex:1}}>
+                                            <label>Start At (Min:Sec)</label>
+                                            <input name="s" defaultValue={formatTime(editItem.startSec)} required />
+                                        </div>
+                                    </div>
+                                    
                                     <div className="btn-row" style={{marginTop:10}}>
-                                        <button type="submit">Save</button>
-                                        <button type="button" className="btn-sec" style={{background: 'var(--danger)'}} onClick={() => {
-                                            setLib(lib.filter(x => x.id !== editItem.id));
-                                            setEditItem(null);
-                                        }}>Delete</button>
+                                        <button type="submit">Save Changes</button>
                                     </div>
                                     <button type="button" className="btn-sec" style={{width:'100%', marginTop: 0}} onClick={() => setEditItem(null)}>Cancel</button>
                                 </form>
