@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily20 Pro | v72</title>
+    <title>Daily20 Pro | v73</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com-react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         :root { --bg: #0a0a0a; --card: #161616; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; }
@@ -70,13 +70,14 @@
         };
 
         const formatTime = (secs) => {
-            const s = Math.max(0, secs);
-            return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
+            const s = Math.max(0, Math.floor(secs));
+            return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
         };
 
         const parseTime = (str) => {
             if (!str) return 0;
             const p = str.split(':');
+            if (p.length === 1) return parseInt(p[0]) || 0;
             return (parseInt(p[0]) * 60) + (parseInt(p[1]) || 0);
         };
 
@@ -128,7 +129,6 @@
                 return count;
             }, [hist, goal, todayKey]);
 
-            // Timer logic for live training
             useEffect(() => {
                 let ticker;
                 if (workout.isActive && !playerPaused) {
@@ -148,7 +148,6 @@
                 return () => clearInterval(ticker);
             }, [workout.isActive, playerPaused, workout.idx]);
 
-            // YT Sync
             useEffect(() => {
                 if (view === 'workout' && !window.YT) {
                     const tag = document.createElement('script');
@@ -160,11 +159,12 @@
 
             const initPlayer = () => {
                 if (playerRef.current && playerRef.current.destroy) playerRef.current.destroy();
-                const meta = getMeta(workout.plan[workout.idx]?.url);
+                const currentV = workout.plan[workout.idx];
+                const meta = getMeta(currentV?.url);
                 if (meta.type === 'yt') {
                     playerRef.current = new YT.Player('player', {
                         height: '100%', width: '100%', videoId: meta.id,
-                        playerVars: { autoplay: 1, start: workout.plan[workout.idx].startSec || 0 },
+                        playerVars: { autoplay: 1, start: currentV.startSec || 0 },
                         events: { 'onStateChange': (e) => setPlayerPaused(e.data !== YT.PlayerState.PLAYING) }
                     });
                 } else { setPlayerPaused(false); }
@@ -188,7 +188,7 @@
 
             return (
                 <div className="container">
-                    <header><h1 className="app-title">DAILY20</h1><span className="v-tag">VERSION 72.0</span></header>
+                    <header><h1 className="app-title">DAILY20</h1><span className="v-tag">VERSION 73.0 (STABLE)</span></header>
 
                     {view === 'home' && (
                         <>
@@ -209,7 +209,8 @@
                                     if(!lib.length) return;
                                     let p = [...lib].sort(() => 0.5 - Math.random());
                                     if(selectedId) p = [lib.find(x => x.id === selectedId), ...p.filter(x => x.id !== selectedId)];
-                                    setWorkout({ plan: p.slice(0,3), idx: 0, secondsLeft: (p[0].durSec - (p[0].startSec || 0)), isActive: true });
+                                    const first = p[0];
+                                    setWorkout({ plan: p.slice(0,3), idx: 0, secondsLeft: (first.durSec - (first.startSec || 0)), isActive: true });
                                     setView('workout');
                                 }}>Start Workout</button>
                                 <div className="btn-row" style={{marginTop:8}}>
@@ -246,12 +247,12 @@
                                 <button className="btn-neon-ghost"><Icons.Import /> Import</button>
                             </div>
                             <form className="card" onSubmit={handleVideoSave}>
-                                <label>{editVideo ? 'Edit Video' : 'Add New Video'}</label>
+                                <label>{editVideo ? 'Edit Entry' : 'Add New Video'}</label>
                                 <input name="t" placeholder="Title" defaultValue={editVideo?.title} required />
                                 <input name="u" placeholder="URL" defaultValue={editVideo?.url} required />
                                 <div style={{display:'flex', gap:8}}>
-                                    <div style={{flex:1}}><label>Total Dur</label><input name="d" placeholder="00:00" defaultValue={editVideo ? formatTime(editVideo.durSec) : ''} required /></div>
-                                    <div style={{flex:1}}><label>Start At</label><input name="s" placeholder="00:00" defaultValue={editVideo ? formatTime(editVideo.startSec) : ''} /></div>
+                                    <div style={{flex:1}}><label>Total Dur</label><input name="d" placeholder="MM:SS" defaultValue={editVideo ? formatTime(editVideo.durSec) : ''} required /></div>
+                                    <div style={{flex:1}}><label>Start At</label><input name="s" placeholder="MM:SS" defaultValue={editVideo ? formatTime(editVideo.startSec) : ''} /></div>
                                 </div>
                                 <div className="btn-row">
                                     <button type="submit">{editVideo ? 'Update' : 'Add'}</button>
@@ -280,7 +281,10 @@
 
                     {view === 'workout' && (
                         <div className="workout-ui">
-                            <div className="player-frame">{getMeta(workout.plan[workout.idx]?.url).type === 'yt' ? <div id="player"></div> : <iframe src={`${workout.plan[workout.idx]?.url?.split('?')[0]}embed`} allowFullScreen></iframe>}</div>
+                            <div className="player-frame">
+                                {getMeta(workout.plan[workout.idx]?.url).type === 'yt' ? <div id="player"></div> : 
+                                <iframe src={`${workout.plan[workout.idx]?.url?.split('?')[0]}embed`} allowFullScreen></iframe>}
+                            </div>
                             <div className="workout-footer">
                                 <div className="timer-display">{formatTime(workout.secondsLeft)}</div>
                                 <div style={{color: playerPaused ? 'var(--danger)' : 'var(--neon)', fontSize:10, marginBottom:10}}>{playerPaused ? 'PAUSED' : 'TRACKING...'}</div>
@@ -335,7 +339,8 @@
                 </div>
             );
         };
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
