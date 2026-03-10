@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' fill='%23000000'/><path d='M 45 35 L 220 128 L 45 221 Z' fill='%23000000' stroke='%23FF9900' stroke-width='15' stroke-linejoin='round' shape-rendering='geometricPrecision'/><text x='45%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='72' fill='%23FF9900' stroke='none'>UT</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' rx='60' fill='black'/><path d='M45 35 L220 128 L45 221 Z' fill='black' stroke='%23FF9900' stroke-width='15' stroke-linejoin='round'/><text x='115' y='138' text-anchor='middle' font-family='sans-serif' font-weight='900' font-size='72' fill='%23FF9900'>UT</text></svg>">
     <title>UTrainTube</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -13,7 +13,6 @@
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; height: 100vh; }
         .container { max-width: 480px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
         .header-box { display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 25px; gap: 15px; }
-        /* Removed filter shadow to keep icon borders crisp and black */
         .app-icon-svg { width: 55px; height: 55px; flex-shrink: 0; }
         .title-row { display: flex; align-items: baseline; gap: 10px; }
         .app-title { color: var(--neon); margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
@@ -51,12 +50,11 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // Icon Logic: x="45%" for optical centering, Black background/stroke-box
         const AppIcon = () => (
             <svg className="app-icon-svg" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="256" height="256" rx="60" fill="#000000"/>
-                <path d="M 45 35 L 220 128 L 45 221 Z" fill="#000000" stroke="#FF9900" stroke-width="15" stroke-linejoin="round" shape-rendering="geometricPrecision"/>
-                <text x="45%" y="50%" dominant-baseline="central" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="900" font-size="72" fill="#FF9900" stroke="none">UT</text>
+                <path d="M 45 35 L 220 128 L 45 221 Z" fill="#000000" stroke="#FF9900" strokeWidth="15" strokeLinejoin="round" shapeRendering="geometricPrecision"/>
+                <text x="115" y="138" dominantBaseline="middle" textAnchor="middle" fontFamily="system-ui, sans-serif" fontWeight="900" fontSize="72" fill="#FF9900">UT</text>
             </svg>
         );
 
@@ -136,7 +134,6 @@
                 return count;
             }, [hist, goal, todayKey]);
 
-            // Triggers standard Browser "Save As" behavior
             const exportData = () => {
                 const bundle = { lib, hist, goal, exportedAt: new Date().toISOString() };
                 const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
@@ -144,7 +141,6 @@
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `UTrainTube_Backup_${todayKey}.json`;
-                // Standard browsers will open a "Save As" dialog if the user has that setting enabled
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -161,8 +157,8 @@
                         if (data.lib) setLib(data.lib);
                         if (data.hist) setHist(data.hist);
                         if (data.goal) setGoal(data.goal);
-                        alert("Data Imported Successfully!");
-                    } catch (err) { alert("Invalid File Format"); }
+                        alert("Data Imported!");
+                    } catch (err) { alert("Import Error"); }
                 };
                 reader.readAsText(file);
             };
@@ -225,153 +221,3 @@
                         <div className="title-row">
                             <h1 className="app-title">UTrainTube</h1>
                             <span className="v-tag">v0.1</span>
-                        </div>
-                    </header>
-
-                    {view === 'home' && (
-                        <>
-                            <div className="card">
-                                <label>Target Goal</label>
-                                <select value={goal} onChange={e => setGoal(parseInt(e.target.value))}>
-                                    {[10, 20, 30, 45, 60].map(g => <option key={g} value={g}>{g} Minutes</option>)}
-                                </select>
-                                <div className="carousel">
-                                    {lib.map(v => (
-                                        <div key={v.id} className={`thumb-wrap ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id === selectedId ? null : v.id)}>
-                                            <img src={getMeta(v.url).thumb} style={{width:'100%', height:'100%', objectFit:'cover'}} />
-                                            <div className="dur-badge">{formatTime(v.durSec - (v.startSec || 0))}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <button onClick={() => {
-                                    if(!lib.length) return;
-                                    let p = [...lib].sort(() => 0.5 - Math.random());
-                                    if(selectedId) p = [lib.find(x => x.id === selectedId), ...p.filter(x => x.id !== selectedId)];
-                                    const first = p[0];
-                                    setWorkout({ plan: p.slice(0,3), idx: 0, secondsLeft: (first.durSec - (first.startSec || 0)), isActive: true });
-                                    setView('workout');
-                                }}>Start Workout</button>
-                                <div className="btn-row" style={{marginTop:8}}>
-                                    <button className="btn-sec" onClick={() => setManualLog(true)}>Manual Log</button>
-                                    <button className="btn-sec" onClick={() => setView('lib')}>Library</button>
-                                </div>
-                            </div>
-                            <div className="card">
-                                <div style={{textAlign:'center', fontSize:28, fontWeight:900}}>{Math.floor(getDailyTotal(todayKey))} <small style={{color:'var(--dim)', fontSize:14}}>/ {goal}m</small></div>
-                                <div className="cal-grid">
-                                    {Array.from({length: 21}).map((_, i) => {
-                                        const d = new Date(); d.setDate(d.getDate() - (20 - i));
-                                        const k = getLocalDateKey(d);
-                                        const m = getDailyTotal(k);
-                                        return (
-                                            <div key={k} className={`cal-day ${m > 0 ? 'has-data' : ''} ${k === todayKey ? 'today' : ''}`} onClick={() => setInspecting({key: k, date: d.toDateString(), items: hist[k]?.items || []})}>
-                                                <span>{d.getDate()}</span>
-                                                {m > 0 && <span className="cal-m">{Math.floor(m)}m</span>}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <div className="streak-box">🔥 {streak} Day Streak</div>
-                            </div>
-                        </>
-                    )}
-
-                    {view === 'lib' && (
-                        <div style={{display:'flex', flexDirection:'column', height:'100%'}}>
-                            <input type="file" ref={fileInputRef} style={{display:'none'}} accept=".json" onChange={importData} />
-                            <div className="btn-row">
-                                <button className="btn-neon-ghost btn-icon" onClick={() => setView('home')}><Icons.Back /></button>
-                                <button className="btn-neon-ghost" onClick={exportData}><Icons.Export /> Export</button>
-                                <button className="btn-neon-ghost" onClick={() => fileInputRef.current.click()}><Icons.Import /> Import</button>
-                            </div>
-                            <form className="card" onSubmit={handleVideoSave}>
-                                <label>{editVideo ? 'Edit Entry' : 'Add New Video'}</label>
-                                <input name="t" placeholder="Title" defaultValue={editVideo?.title} required />
-                                <input name="u" placeholder="URL" defaultValue={editVideo?.url} required />
-                                <div style={{display:'flex', gap:8}}>
-                                    <div style={{flex:1}}><label>Total Dur</label><input name="d" placeholder="MM:SS" defaultValue={editVideo ? formatTime(editVideo.durSec) : ''} required /></div>
-                                    <div style={{flex:1}}><label>Start At</label><input name="s" placeholder="MM:SS" defaultValue={editVideo ? formatTime(editVideo.startSec) : ''} /></div>
-                                </div>
-                                <div className="btn-row">
-                                    <button type="submit">{editVideo ? 'Update' : 'Add'}</button>
-                                    {editVideo && <button type="button" className="btn-sec" onClick={() => setEditVideo(null)}>Cancel</button>}
-                                </div>
-                            </form>
-                            <div className="card" style={{flex:1, overflowY:'auto'}}>
-                                <div style={{position:'relative', marginBottom:12}}><input placeholder="Search library..." style={{paddingLeft:40}} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} /><div style={{position:'absolute', left:12, top:10, color:'var(--dim)'}}><Icons.Search /></div></div>
-                                {lib.filter(v => v.title.toLowerCase().includes(searchQuery.toLowerCase())).map(v => (
-                                    <div key={v.id} style={{display:'flex', alignItems:'center', gap:10, padding:'10px 0', borderBottom:'1px solid #222'}}>
-                                        <div style={{position:'relative'}}><img src={getMeta(v.url).thumb} style={{width:70, height:40, borderRadius:6, objectFit:'cover'}} /><div className="dur-badge" style={{fontSize:8}}>{formatTime(v.durSec - (v.startSec || 0))}</div></div>
-                                        <div style={{flex:1, fontSize:13, fontWeight:700}}>{v.title}</div>
-                                        <button className="btn-sec btn-icon" style={{width:32, height:32}} onClick={() => setEditVideo(v)}><Icons.Edit /></button>
-                                        <button className="btn-sec btn-icon" style={{width:32, height:32, color:'var(--danger)'}} onClick={() => { if(confirm('Delete?')) setLib(lib.filter(x => x.id !== v.id)) }}><Icons.Trash /></button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {view === 'workout' && (
-                        <div className="workout-ui">
-                            <div className="player-frame">{getMeta(workout.plan[workout.idx]?.url).type === 'yt' ? <div id="player"></div> : <iframe src={`${workout.plan[workout.idx]?.url?.split('?')[0]}embed`} allowFullScreen></iframe>}</div>
-                            <div className="workout-footer">
-                                <div className="timer-display">{formatTime(workout.secondsLeft)}</div>
-                                <div className="btn-row" style={{justifyContent:'center', marginBottom:10}}>
-                                    <button onClick={() => setPlayerPaused(!playerPaused)} className={playerPaused ? "btn-sec" : ""} style={{flex:'none', width:140, background: playerPaused ? 'var(--safe)' : '#2a2a2a', color: playerPaused ? '#000' : '#fff'}}>{playerPaused ? <Icons.Play /> : <Icons.Pause />}{playerPaused ? 'RESUME' : 'PAUSE'}</button>
-                                </div>
-                                <h3 style={{margin:0}}>{workout.plan[workout.idx]?.title}</h3>
-                                <div className="btn-row" style={{marginTop:15}}>
-                                    <button className="btn-sec" onClick={() => { if (workout.idx + 1 < workout.plan.length) { const n = workout.idx + 1; setWorkout({...workout, idx: n, secondsLeft: (workout.plan[n].durSec - (workout.plan[n].startSec || 0))}); } else { setView('home'); setWorkout({...workout, isActive: false}); } }}>Skip</button>
-                                    <button onClick={() => {setView('home'); setWorkout({...workout, isActive: false});}}>End</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {manualLog && (
-                        <div className="overlay" onClick={() => setManualLog(false)}>
-                            <div className="card" style={{width:'90%'}} onClick={e => e.stopPropagation()}>
-                                <h3>Manual Activity</h3>
-                                <label>Date</label><input type="date" id="mD" defaultValue={todayKey} />
-                                <label>Name</label><input id="mL" placeholder="Gym, Running, etc." />
-                                <label>Minutes</label><input id="mM" type="number" />
-                                <button onClick={() => {
-                                    const l = document.getElementById('mL').value || "Manual";
-                                    const m = parseFloat(document.getElementById('mM').value) || 0;
-                                    const d = document.getElementById('mD').value;
-                                    setHist(prev => {
-                                        const day = prev[d] || { items: [] };
-                                        return { ...prev, [d]: { items: [...(day.items || []), { label: l, mins: m }] } };
-                                    });
-                                    setManualLog(false);
-                                }}>Save</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {inspecting && (
-                        <div className="overlay" onClick={() => setInspecting(null)}>
-                            <div className="card" style={{width:'90%'}} onClick={e => e.stopPropagation()}>
-                                <div style={{display:'flex', justifyContent:'space-between', marginBottom:15}}><h3>{inspecting.date}</h3><div onClick={() => setInspecting(null)}><Icons.X /></div></div>
-                                {inspecting.items.map((it, i) => (
-                                    <div key={i} style={{display:'flex', alignItems:'center', padding:'10px 0', borderBottom:'1px solid #333'}}>
-                                        <div style={{flex:1}}><div style={{fontSize:13, fontWeight:700}}>{it.label}</div><div style={{fontSize:11, color:'var(--neon)'}}>{Math.round(it.mins)}m</div></div>
-                                        <button className="btn-sec btn-icon" style={{width:32, height:32, color:'var(--danger)'}} onClick={() => {
-                                            const newItems = inspecting.items.filter((_, idx) => idx !== i);
-                                            setHist({...hist, [inspecting.key]: { items: newItems }});
-                                            setInspecting({...inspecting, items: newItems});
-                                        }}><Icons.Trash /></button>
-                                    </div>
-                                ))}
-                                <button style={{marginTop:15}} onClick={() => setInspecting(null)}>Close</button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
