@@ -12,42 +12,46 @@
         :root { --bg: #0a0a0a; --card: #161616; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --safe: #2ecc71; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; height: 100vh; }
         .container { max-width: 480px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+        
+        /* Header */
         .header-box { display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 25px; gap: 15px; }
         .app-icon-svg { width: 55px; height: 55px; flex-shrink: 0; border-radius: 12px; }
-        .title-row { display: flex; align-items: baseline; gap: 10px; }
         .app-title { color: var(--neon); margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
-        .v-tag { color: var(--dim); font-size: 12px; font-family: monospace; font-weight: 700; }
+        .v-tag { color: var(--dim); font-size: 12px; font-family: monospace; font-weight: 700; margin-left: 8px; }
+
+        /* Cards & UI */
         .card { background: var(--card); padding: 16px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #282828; }
         .btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
-        button { background: var(--neon); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; flex: 1; transition: opacity 0.2s; }
+        button { background: var(--neon); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; flex: 1; }
         .btn-sec { background: #2a2a2a; color: white; }
-        .btn-neon-ghost { background: transparent; color: var(--neon); border: 1.5px solid var(--neon); }
-        .btn-icon { width: 40px; height: 40px; flex: none; padding: 0; }
-        svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-        input, select, textarea { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
+        svg.btn-svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+        
+        input, select { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
         label { font-size: 10px; font-weight: 800; color: var(--neon); text-transform: uppercase; margin-bottom: 4px; display: block; }
+
+        /* Carousel */
         .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0 20px 0; scrollbar-width: none; }
-        .carousel::-webkit-scrollbar { display: none; }
         .thumb-wrap { position: relative; width: 120px; height: 68px; border-radius: 12px; overflow: hidden; border: 2px solid transparent; background: #000; flex-shrink: 0; }
         .thumb-wrap.selected { border-color: var(--neon); transform: scale(1.05); transition: transform 0.2s; }
-        .dur-badge { position: absolute; bottom: 3px; right: 3px; font-size: 9px; font-weight: 800; background: rgba(0,0,0,0.8); padding: 2px 4px; border-radius: 4px; color: var(--neon); }
+
+        /* Stats & Calendar */
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 8px; }
+        .cal-day { aspect-ratio: 1; border-radius: 8px; background: #1f1f1f; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1.5px solid transparent; }
+        .cal-day.today { border-color: var(--neon); }
+        .cal-day.has-data { color: var(--neon); font-weight: bold; }
+
+        /* Workout Overlay */
         .workout-ui { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; }
         .player-frame { width: 100%; flex: 1; background: #000; }
         .player-frame iframe { width: 100%; height: 100%; border: none; }
         .workout-footer { background: var(--bg); padding: 20px 20px 40px; border-top: 1px solid #333; text-align: center; }
-        .timer-display { font-size: 64px; font-weight: 900; color: var(--neon); line-height: 1; margin-bottom: 5px; }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 15px; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 8px; }
-        .cal-day { aspect-ratio: 1; border-radius: 8px; background: #1f1f1f; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 1.5px solid transparent; }
-        .cal-day.today { border: 2px solid var(--neon); }
-        .cal-day.has-data { color: var(--neon); }
-        .streak-box { text-align: center; color: var(--neon); font-weight: 800; font-size: 14px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #222; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
+        const { useState, useEffect, useRef } = React;
 
         const AppIcon = () => (
             <svg className="app-icon-svg" viewBox="0 0 256 256" style={{background: 'black'}}>
@@ -56,33 +60,11 @@
             </svg>
         );
 
-        const Icons = {
-            Back: () => <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
-            Edit: () => <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
-            Trash: () => <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
-            Export: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>,
-            Import: () => <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>,
-            X: () => <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-            Search: () => <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-            Pause: () => <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>,
-            Play: () => <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        };
+        const TrashIcon = () => <svg className="btn-svg" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
 
         const getLocalDateKey = (d = new Date()) => {
             const offset = d.getTimezoneOffset() * 60000;
             return new Date(d.getTime() - offset).toISOString().split('T')[0];
-        };
-
-        const formatTime = (secs) => {
-            const s = Math.max(0, Math.floor(secs));
-            return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
-        };
-
-        const getMeta = (url) => {
-            if (!url) return { type: 'none', id: null, thumb: '' };
-            const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|.*embed\/))([^&?\s]{11})/);
-            if (yt) return { type: 'yt', id: yt[1], thumb: `https://img.youtube.com/vi/${yt[1]}/mqdefault.jpg` };
-            return { type: 'web', id: null, thumb: 'https://placehold.co/100x60/222/ff9900?text=VIDEO' };
         };
 
         const App = () => {
@@ -91,10 +73,8 @@
             const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('ut_hist')) || {});
             const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('ut_goal')) || 20);
             const [selectedId, setSelectedId] = useState(null);
-            const [workout, setWorkout] = useState({ plan: [], idx: 0, secondsLeft: 0, isActive: false });
-            const [editVideo, setEditVideo] = useState(null);
+            const [workout, setWorkout] = useState({ active: false, video: null });
             const [manualLog, setManualLog] = useState(false);
-            const [inspecting, setInspecting] = useState(null);
             const fileInputRef = useRef(null);
             const todayKey = getLocalDateKey();
 
@@ -125,59 +105,63 @@
                         if (data.lib) setLib(data.lib);
                         if (data.hist) setHist(data.hist);
                         if (data.goal) setGoal(data.goal);
-                    } catch (err) { alert("Import failed"); }
+                        alert("Imported!");
+                    } catch (err) { alert("Invalid file"); }
                 };
                 reader.readAsText(file);
             };
 
+            const addActivity = (label, mins) => {
+                setHist(prev => {
+                    const day = prev[todayKey] || { items: [] };
+                    return { ...prev, [todayKey]: { items: [...day.items, { label, mins: parseFloat(mins) }] } };
+                });
+            };
+
             const getDailyTotal = (key) => {
-                const day = hist[key];
-                if (!day || !day.items) return 0;
-                return day.items.reduce((acc, item) => acc + (parseFloat(item.mins) || 0), 0);
+                return (hist[key]?.items || []).reduce((acc, i) => acc + i.mins, 0);
             };
 
             return (
                 <div className="container">
                     <header className="header-box">
                         <AppIcon />
-                        <div className="title-row">
-                            <h1 className="app-title">UTrainTube</h1>
-                            <span className="v-tag">v0.1</span>
+                        <div>
+                            <h1 className="app-title">UTrainTube <span className="v-tag">v0.1</span></h1>
                         </div>
                     </header>
 
                     {view === 'home' && (
                         <>
                             <div className="card">
-                                <label>Daily Goal (Mins)</label>
+                                <label>Daily Goal</label>
                                 <select value={goal} onChange={e => setGoal(parseInt(e.target.value))}>
-                                    {[10, 20, 30, 45, 60].map(g => <option key={g} value={g}>{g}</option>)}
+                                    {[10, 20, 30, 45, 60].map(g => <option key={g} value={g}>{g} Minutes</option>)}
                                 </select>
                                 <div className="carousel">
                                     {lib.map(v => (
                                         <div key={v.id} className={`thumb-wrap ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id)}>
-                                            <img src={getMeta(v.url).thumb} style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                                            <img src={`https://img.youtube.com/vi/${v.url.split('v=')[1]?.split('&')[0]}/mqdefault.jpg`} style={{width:'100%', height:'100%', objectFit:'cover'}} />
                                         </div>
                                     ))}
                                 </div>
                                 <button onClick={() => {
-                                    if(!lib.length) return;
-                                    const p = selectedId ? [lib.find(x => x.id === selectedId)] : [lib[0]];
-                                    setWorkout({ plan: p, idx: 0, secondsLeft: 600, isActive: true });
-                                    setView('workout');
+                                    const v = lib.find(x => x.id === selectedId) || lib[0];
+                                    if (v) { setWorkout({ active: true, video: v }); setView('workout'); }
                                 }}>Start Workout</button>
                                 <div className="btn-row" style={{marginTop:10}}>
                                     <button className="btn-sec" onClick={() => setView('lib')}>Library</button>
-                                    <button className="btn-sec" onClick={() => setManualLog(true)}>Log Manually</button>
+                                    <button className="btn-sec" onClick={() => setManualLog(true)}>Quick Log</button>
                                 </div>
                             </div>
                             <div className="card">
-                                <div style={{textAlign:'center', fontSize:24, fontWeight:900}}>{Math.floor(getDailyTotal(todayKey))} / {goal}m</div>
+                                <div style={{textAlign:'center', fontSize:24, fontWeight:900, marginBottom:10}}>{Math.floor(getDailyTotal(todayKey))} / {goal}m</div>
                                 <div className="cal-grid">
                                     {Array.from({length: 14}).map((_, i) => {
                                         const d = new Date(); d.setDate(d.getDate() - (13 - i));
                                         const k = getLocalDateKey(d);
-                                        return <div key={k} className={`cal-day ${k === todayKey ? 'today' : ''} ${getDailyTotal(k) > 0 ? 'has-data' : ''}`}>{d.getDate()}</div>;
+                                        const total = getDailyTotal(k);
+                                        return <div key={k} className={`cal-day ${k === todayKey ? 'today' : ''} ${total > 0 ? 'has-data' : ''}`}>{d.getDate()}</div>;
                                     })}
                                 </div>
                             </div>
@@ -186,68 +170,61 @@
 
                     {view === 'lib' && (
                         <div className="card">
-                            <button className="btn-sec" onClick={() => setView('home')}>Back</button>
+                            <button className="btn-sec" onClick={() => setView('home')}>← Back</button>
                             <div className="btn-row" style={{marginTop:10}}>
                                 <button onClick={exportData}>Export</button>
                                 <button onClick={() => fileInputRef.current.click()}>Import</button>
                             </div>
                             <input type="file" ref={fileInputRef} style={{display:'none'}} onChange={importData} />
-                            <hr style={{borderColor:'#333', margin:'15px 0'}} />
+                            <hr style={{borderColor:'#333', margin:'20px 0'}} />
                             <form onSubmit={(e) => {
                                 e.preventDefault();
                                 const f = new FormData(e.target);
-                                const v = { id: Date.now(), title: f.get('t'), url: f.get('u') };
-                                setLib([v, ...lib]);
+                                setLib([{ id: Date.now(), title: f.get('t'), url: f.get('u') }, ...lib]);
                                 e.target.reset();
                             }}>
-                                <input name="t" placeholder="Title" required />
+                                <input name="t" placeholder="Video Title" required />
                                 <input name="u" placeholder="YouTube URL" required />
-                                <button type="submit">Add Video</button>
+                                <button type="submit">Add to Library</button>
                             </form>
-                            <div style={{marginTop:15}}>
+                            <div style={{marginTop:20}}>
                                 {lib.map(v => (
                                     <div key={v.id} style={{display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid #333'}}>
-                                        <span>{v.title}</span>
-                                        <button className="btn-icon" onClick={() => setLib(lib.filter(x => x.id !== v.id))}><Icons.Trash /></button>
+                                        <span style={{fontSize:14}}>{v.title}</span>
+                                        <div onClick={() => setLib(lib.filter(x => x.id !== v.id))}><TrashIcon /></div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {view === 'workout' && (
+                    {view === 'workout' && workout.video && (
                         <div className="workout-ui">
                             <div className="player-frame">
-                                <iframe src={`https://www.youtube.com/embed/${getMeta(workout.plan[0].url).id}?autoplay=1`} allow="autoplay"></iframe>
+                                <iframe src={`https://www.youtube.com/embed/${workout.video.url.split('v=')[1]?.split('&')[0]}?autoplay=1`} allow="autoplay"></iframe>
                             </div>
                             <div className="workout-footer">
-                                <div className="timer-display">Active</div>
+                                <h3>{workout.video.title}</h3>
                                 <button onClick={() => {
-                                    setHist(prev => {
-                                        const day = prev[todayKey] || { items: [] };
-                                        return { ...prev, [todayKey]: { items: [...day.items, { label: workout.plan[0].title, mins: 10 }] } };
-                                    });
+                                    addActivity(workout.video.title, 15);
                                     setView('home');
-                                }}>Finish (Log 10m)</button>
+                                    setWorkout({ active: false, video: null });
+                                }}>Finish (Log 15m)</button>
+                                <button className="btn-sec" style={{marginTop:10}} onClick={() => setView('home')}>Cancel</button>
                             </div>
                         </div>
                     )}
 
                     {manualLog && (
                         <div className="overlay" onClick={() => setManualLog(false)}>
-                            <div className="card" style={{width:'80%'}} onClick={e => e.stopPropagation()}>
-                                <h3>Log Activity</h3>
-                                <input id="mL" placeholder="Activity Name" />
+                            <div className="card" style={{width:'85%'}} onClick={e => e.stopPropagation()}>
+                                <h3>Manual Log</h3>
+                                <input id="mL" placeholder="Activity (e.g. Run)" />
                                 <input id="mM" type="number" placeholder="Minutes" />
                                 <button onClick={() => {
-                                    const l = document.getElementById('mL').value;
-                                    const m = document.getElementById('mM').value;
-                                    setHist(prev => {
-                                        const day = prev[todayKey] || { items: [] };
-                                        return { ...prev, [todayKey]: { items: [...day.items, { label: l, mins: m }] } };
-                                    });
+                                    addActivity(document.getElementById('mL').value || 'Manual', document.getElementById('mM').value || 0);
                                     setManualLog(false);
-                                }}>Save</button>
+                                }}>Save Activity</button>
                             </div>
                         </div>
                     )}
