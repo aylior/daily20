@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' rx='60' fill='%230A0A0A'/><path d='M 85 70 L 85 186 L 190 128 Z' fill='none' stroke='%23FF9900' stroke-width='16' stroke-linejoin='round'/><text x='110' y='145' font-family='sans-serif' font-weight='900' font-size='60' fill='%23FF9900'>U</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'><rect width='256' height='256' fill='%230A0A0A'/><path d='M 70 50 L 210 128 L 70 206 Z' fill='%23FF9900' stroke='%23FF9900' stroke-width='20' stroke-linejoin='round'/><path d='M 105 100 V 145 A 20 20 0 0 0 145 145 V 100' fill='none' stroke='%230A0A0A' stroke-width='16' stroke-linecap='round'/></svg>">
     <title>UTrainTube</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -12,60 +12,48 @@
         :root { --bg: #0a0a0a; --card: #161616; --neon: #ff9900; --text: #ffffff; --dim: #888888; --danger: #ff4d4d; --safe: #2ecc71; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; height: 100vh; }
         .container { max-width: 480px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
-        
-        /* Updated Icon Header Style (Side-by-side layout) */
         .header-box { display: flex; flex-direction: row; align-items: center; justify-content: center; margin-bottom: 20px; gap: 12px; }
-        .app-icon-svg { width: 50px; height: 50px; flex-shrink: 0; }
+        .app-icon-svg { width: 50px; height: 50px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(255,153,0,0.3)); }
         .title-group { display: flex; flex-direction: column; align-items: flex-start; }
         .app-title { color: var(--neon); margin: 0; font-size: 28px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
         .v-tag { color: var(--dim); font-size: 10px; font-family: monospace; display: block; margin-top: 4px; }
-        
         .card { background: var(--card); padding: 16px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #282828; }
-
         .btn-row { display: flex; gap: 8px; margin-bottom: 12px; }
         button { background: var(--neon); color: #000; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; flex: 1; transition: opacity 0.2s; }
         .btn-sec { background: #2a2a2a; color: white; }
         .btn-neon-ghost { background: transparent; color: var(--neon); border: 1.5px solid var(--neon); }
         .btn-icon { width: 40px; height: 40px; flex: none; padding: 0; }
         svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-
         input, select, textarea { background: #222; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
         label { font-size: 10px; font-weight: 800; color: var(--neon); text-transform: uppercase; margin-bottom: 4px; display: block; }
-
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 8px; }
         .cal-day { aspect-ratio: 1; border-radius: 8px; background: #1f1f1f; font-size: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 1.5px solid transparent; }
         .cal-day.today { border: 2px solid var(--neon); background: #222; }
         .cal-day.has-data { color: var(--neon); }
         .cal-m { font-weight: 900; font-size: 10px; }
         .streak-box { text-align: center; color: var(--neon); font-weight: 800; font-size: 14px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #222; }
-
         .carousel { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0 20px 0; scrollbar-width: none; }
         .carousel::-webkit-scrollbar { display: none; }
         .thumb-wrap { position: relative; width: 120px; height: 68px; border-radius: 12px; overflow: hidden; border: 2px solid transparent; background: #000; flex-shrink: 0; transition: all 0.2s; }
         .thumb-wrap.selected { border-color: var(--neon); box-shadow: 0 0 15px rgba(255, 153, 0, 0.4); transform: scale(1.05); }
         .dur-badge { position: absolute; bottom: 3px; right: 3px; font-size: 9px; font-weight: 800; background: rgba(0,0,0,0.8); padding: 2px 4px; border-radius: 4px; color: var(--neon); }
-
         .workout-ui { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; }
         .player-frame { width: 100%; flex: 1; background: #000; }
         .player-frame iframe { width: 100%; height: 100%; border: none; }
         .workout-footer { background: var(--bg); padding: 20px 20px 40px; border-top: 1px solid #333; text-align: center; }
         .timer-display { font-size: 64px; font-weight: 900; color: var(--neon); font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 5px; }
-        
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 15px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // New UTrainTube Icon
         const AppIcon = () => (
             <svg className="app-icon-svg" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="256" height="256" rx="60" fill="#161616"/>
-                <path d="M 85 70 L 85 186 L 190 128 Z" fill="none" stroke="#FF9900" stroke-width="16" stroke-linejoin="round"/>
-                <text x="110" y="145" font-family="system-ui, sans-serif" font-weight="900" font-size="60" fill="#FF9900">U</text>
+                <path d="M 70 50 L 210 128 L 70 206 Z" fill="#FF9900" stroke="#FF9900" stroke-width="20" stroke-linejoin="round"/>
+                <path d="M 105 100 V 145 A 20 20 0 0 0 145 145 V 100" fill="none" stroke="#0a0a0a" stroke-width="16" stroke-linecap="round"/>
             </svg>
         );
 
@@ -112,16 +100,15 @@
             const [lib, setLib] = useState(() => JSON.parse(localStorage.getItem('d20_lib')) || []);
             const [hist, setHist] = useState(() => JSON.parse(localStorage.getItem('d20_hist')) || {});
             const [goal, setGoal] = useState(() => parseInt(localStorage.getItem('d20_goal')) || 20);
-            
             const [selectedId, setSelectedId] = useState(null);
             const [searchQuery, setSearchQuery] = useState('');
             const [inspecting, setInspecting] = useState(null);
             const [manualLog, setManualLog] = useState(false);
             const [editVideo, setEditVideo] = useState(null);
-
             const [workout, setWorkout] = useState({ plan: [], idx: 0, secondsLeft: 0, isActive: false });
             const [playerPaused, setPlayerPaused] = useState(true);
             const playerRef = useRef(null);
+            const fileInputRef = useRef(null);
             const todayKey = getLocalDateKey();
 
             useEffect(() => {
@@ -132,7 +119,7 @@
 
             const getDailyTotal = (key) => {
                 const day = hist[key];
-                if (!day || !day.items || !Array.isArray(day.items)) return 0;
+                if (!day || !day.items) return 0;
                 return day.items.reduce((acc, item) => acc + (parseFloat(item.mins) || 0), 0);
             };
 
@@ -145,6 +132,32 @@
                 }
                 return count;
             }, [hist, goal, todayKey]);
+
+            const exportData = () => {
+                const bundle = { lib, hist, goal, exportedAt: new Date().toISOString() };
+                const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `UTrainTube_Backup_${todayKey}.json`;
+                a.click();
+            };
+
+            const importData = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        const data = JSON.parse(evt.target.result);
+                        if (data.lib) setLib(data.lib);
+                        if (data.hist) setHist(data.hist);
+                        if (data.goal) setGoal(data.goal);
+                        alert("Data Imported Successfully!");
+                    } catch (err) { alert("Invalid File Format"); }
+                };
+                reader.readAsText(file);
+            };
 
             useEffect(() => {
                 let ticker;
@@ -190,13 +203,7 @@
             const handleVideoSave = (e) => {
                 e.preventDefault();
                 const f = new FormData(e.target);
-                const data = {
-                    id: editVideo ? editVideo.id : Date.now(),
-                    title: f.get('t'),
-                    url: f.get('u'),
-                    durSec: parseTime(f.get('d')),
-                    startSec: parseTime(f.get('s'))
-                };
+                const data = { id: editVideo ? editVideo.id : Date.now(), title: f.get('t'), url: f.get('u'), durSec: parseTime(f.get('d')), startSec: parseTime(f.get('s')) };
                 if (editVideo) setLib(lib.map(v => v.id === editVideo.id ? data : v));
                 else setLib([data, ...lib]);
                 setEditVideo(null);
@@ -207,10 +214,7 @@
                 <div className="container">
                     <header className="header-box">
                         <AppIcon />
-                        <div className="title-group">
-                            <h1 className="app-title">UTrainTube</h1>
-                            <span className="v-tag">BASELINE v76.0</span>
-                        </div>
+                        <div className="title-group"><h1 className="app-title">UTrainTube</h1><span className="v-tag">BASELINE v78.0</span></div>
                     </header>
 
                     {view === 'home' && (
@@ -222,9 +226,7 @@
                                 </select>
                                 <div className="carousel">
                                     {lib.map(v => (
-                                        <div key={v.id} 
-                                             className={`thumb-wrap ${selectedId === v.id ? 'selected' : ''}`} 
-                                             onClick={() => setSelectedId(v.id === selectedId ? null : v.id)}>
+                                        <div key={v.id} className={`thumb-wrap ${selectedId === v.id ? 'selected' : ''}`} onClick={() => setSelectedId(v.id === selectedId ? null : v.id)}>
                                             <img src={getMeta(v.url).thumb} style={{width:'100%', height:'100%', objectFit:'cover'}} />
                                             <div className="dur-badge">{formatTime(v.durSec - (v.startSec || 0))}</div>
                                         </div>
@@ -243,7 +245,6 @@
                                     <button className="btn-sec" onClick={() => setView('lib')}>Library</button>
                                 </div>
                             </div>
-
                             <div className="card">
                                 <div style={{textAlign:'center', fontSize:28, fontWeight:900}}>{Math.floor(getDailyTotal(todayKey))} <small style={{color:'var(--dim)', fontSize:14}}>/ {goal}m</small></div>
                                 <div className="cal-grid">
@@ -266,10 +267,11 @@
 
                     {view === 'lib' && (
                         <div style={{display:'flex', flexDirection:'column', height:'100%'}}>
+                            <input type="file" ref={fileInputRef} style={{display:'none'}} accept=".json" onChange={importData} />
                             <div className="btn-row">
                                 <button className="btn-neon-ghost btn-icon" onClick={() => setView('home')}><Icons.Back /></button>
-                                <button className="btn-neon-ghost"><Icons.Export /> Export</button>
-                                <button className="btn-neon-ghost"><Icons.Import /> Import</button>
+                                <button className="btn-neon-ghost" onClick={exportData}><Icons.Export /> Export</button>
+                                <button className="btn-neon-ghost" onClick={() => fileInputRef.current.click()}><Icons.Import /> Import</button>
                             </div>
                             <form className="card" onSubmit={handleVideoSave}>
                                 <label>{editVideo ? 'Edit Entry' : 'Add New Video'}</label>
@@ -285,19 +287,13 @@
                                 </div>
                             </form>
                             <div className="card" style={{flex:1, overflowY:'auto'}}>
-                                <div style={{position:'relative', marginBottom:12}}>
-                                    <input placeholder="Search library..." style={{paddingLeft:40}} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                                    <div style={{position:'absolute', left:12, top:10, color:'var(--dim)'}}><Icons.Search /></div>
-                                </div>
+                                <div style={{position:'relative', marginBottom:12}}><input placeholder="Search library..." style={{paddingLeft:40}} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} /><div style={{position:'absolute', left:12, top:10, color:'var(--dim)'}}><Icons.Search /></div></div>
                                 {lib.filter(v => v.title.toLowerCase().includes(searchQuery.toLowerCase())).map(v => (
                                     <div key={v.id} style={{display:'flex', alignItems:'center', gap:10, padding:'10px 0', borderBottom:'1px solid #222'}}>
-                                        <div style={{position:'relative'}}>
-                                            <img src={getMeta(v.url).thumb} style={{width:70, height:40, borderRadius:6, objectFit:'cover'}} />
-                                            <div className="dur-badge" style={{fontSize:8}}>{formatTime(v.durSec - (v.startSec || 0))}</div>
-                                        </div>
+                                        <div style={{position:'relative'}}><img src={getMeta(v.url).thumb} style={{width:70, height:40, borderRadius:6, objectFit:'cover'}} /><div className="dur-badge" style={{fontSize:8}}>{formatTime(v.durSec - (v.startSec || 0))}</div></div>
                                         <div style={{flex:1, fontSize:13, fontWeight:700}}>{v.title}</div>
                                         <button className="btn-sec btn-icon" style={{width:32, height:32}} onClick={() => setEditVideo(v)}><Icons.Edit /></button>
-                                        <button className="btn-sec btn-icon" style={{width:32, height:32, color:'var(--danger)'}} onClick={() => setLib(lib.filter(x => x.id !== v.id))}><Icons.Trash /></button>
+                                        <button className="btn-sec btn-icon" style={{width:32, height:32, color:'var(--danger)'}} onClick={() => { if(confirm('Delete?')) setLib(lib.filter(x => x.id !== v.id)) }}><Icons.Trash /></button>
                                     </div>
                                 ))}
                             </div>
@@ -306,20 +302,12 @@
 
                     {view === 'workout' && (
                         <div className="workout-ui">
-                            <div className="player-frame">
-                                {getMeta(workout.plan[workout.idx]?.url).type === 'yt' ? <div id="player"></div> : 
-                                <iframe src={`${workout.plan[workout.idx]?.url?.split('?')[0]}embed`} allowFullScreen></iframe>}
-                            </div>
+                            <div className="player-frame">{getMeta(workout.plan[workout.idx]?.url).type === 'yt' ? <div id="player"></div> : <iframe src={`${workout.plan[workout.idx]?.url?.split('?')[0]}embed`} allowFullScreen></iframe>}</div>
                             <div className="workout-footer">
                                 <div className="timer-display">{formatTime(workout.secondsLeft)}</div>
-                                
                                 <div className="btn-row" style={{justifyContent:'center', marginBottom:10}}>
-                                    <button onClick={() => setPlayerPaused(!playerPaused)} className={playerPaused ? "btn-sec" : ""} style={{flex:'none', width:140, background: playerPaused ? 'var(--safe)' : '#2a2a2a', color: playerPaused ? '#000' : '#fff'}}>
-                                        {playerPaused ? <Icons.Play /> : <Icons.Pause />}
-                                        {playerPaused ? 'RESUME' : 'PAUSE'}
-                                    </button>
+                                    <button onClick={() => setPlayerPaused(!playerPaused)} className={playerPaused ? "btn-sec" : ""} style={{flex:'none', width:140, background: playerPaused ? 'var(--safe)' : '#2a2a2a', color: playerPaused ? '#000' : '#fff'}}>{playerPaused ? <Icons.Play /> : <Icons.Pause />}{playerPaused ? 'RESUME' : 'PAUSE'}</button>
                                 </div>
-
                                 <h3 style={{margin:0}}>{workout.plan[workout.idx]?.title}</h3>
                                 <div className="btn-row" style={{marginTop:15}}>
                                     <button className="btn-sec" onClick={() => { if (workout.idx + 1 < workout.plan.length) { const n = workout.idx + 1; setWorkout({...workout, idx: n, secondsLeft: (workout.plan[n].durSec - (workout.plan[n].startSec || 0))}); } else { setView('home'); setWorkout({...workout, isActive: false}); } }}>Skip</button>
